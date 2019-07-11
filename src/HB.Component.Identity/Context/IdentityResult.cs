@@ -36,7 +36,7 @@ namespace HB.Component.Identity
 
         public IdentityResult(DatabaseResult dbResult)
         {
-            switch (dbResult.Status)
+            switch (dbResult.ThrowIfNull(nameof(dbResult)).Status)
             {
                 case DatabaseResultStatus.Succeeded:
                     Status = IdentityResultStatus.Succeeded;

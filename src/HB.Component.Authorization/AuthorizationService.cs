@@ -67,7 +67,7 @@ namespace HB.Component.Authorization
             {
                 await database.RollbackAsync(transactionContext).ConfigureAwait(false);
                 logger.LogCritical(ex, $"SignInTokenGuid:{signInTokenGuid}");
-                return AuthorizationResult.Throwed();
+                return AuthorizationResult.Throwed(ex);
             }
         }
 

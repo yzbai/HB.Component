@@ -8,6 +8,8 @@ namespace System.Security.Claims
     {
         public static string GetClaimValue(this ClaimsPrincipal principal, string claimExtensionType)
         {
+            principal.ThrowIfNull(nameof(principal));
+
             if (principal.HasClaim(c => c.Type == claimExtensionType))
             {
                 Claim claim = principal.Claims.First(c => c.Type == claimExtensionType);

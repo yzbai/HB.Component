@@ -26,7 +26,7 @@ namespace HB.Component.Identity
 
         public async Task<IList<Claim>> CreateClaimsAsync(User user, TransactionContext transContext)
         {
-            transContext.RequireNotNull();
+            ThrowIf.Null(transContext, nameof(transContext));
 
             if (user == null) { return null; }
 

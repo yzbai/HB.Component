@@ -23,7 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\HB.Framework.Database\src\HB.Infrastructure.SQLite.Aspnetcore\HB.Infrastructure.SQLite.Aspnetcore.csproj" />
     <ProjectReference Include="..\..\src\HB.Component.Identity\HB.Component.Identity.csproj" />
   </ItemGroup>
 

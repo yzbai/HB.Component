@@ -60,7 +60,7 @@ namespace HB.Component.Authorization
                 return AuthorizationResult.ArgumentError();
             }
 
-            transContext.RequireNotNull();
+            transContext.ThrowIfNull(nameof(transContext));
 
             WhereExpression<SignInToken> where = _db.Where<SignInToken>()
                 .Where(at => at.ClientType != Enum.GetName(typeof(ClientType), ClientType.Web))
@@ -91,7 +91,7 @@ namespace HB.Component.Authorization
                 return AuthorizationResult.ArgumentError();
             }
 
-            transContext.RequireNotNull();
+            transContext.ThrowIfNull(nameof(transContext));
 
             IList<SignInToken> resultList = await _db.RetrieveAsync<SignInToken>(at => at.UserGuid == userGuid, transContext).ConfigureAwait(false);
 
@@ -113,7 +113,7 @@ namespace HB.Component.Authorization
                 return AuthorizationResult.ArgumentError();
             }
 
-            transContext.RequireNotNull();
+            transContext.ThrowIfNull(nameof(transContext));
 
             IList<SignInToken> resultList = await _db.RetrieveAsync<SignInToken>(at => at.Guid == signInTokenGuid, transContext).ConfigureAwait(false);
 
