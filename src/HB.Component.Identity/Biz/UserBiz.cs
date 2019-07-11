@@ -93,7 +93,7 @@ namespace HB.Component.Identity
 
         public async Task<IdentityResult> SetLockoutAsync(string userGuid, bool lockout, TransactionContext transContext, TimeSpan? lockoutTimeSpan = null)
         {
-            transContext.RequireNotNull();
+            transContext.ThrowIfNull(nameof(transContext));
 
             User user = await GetAsync(userGuid, transContext).ConfigureAwait(false);
 
@@ -114,7 +114,7 @@ namespace HB.Component.Identity
 
         public async Task<IdentityResult> SetAccessFailedCountAsync(string userGuid, long count, TransactionContext transContext)
         {
-            transContext.RequireNotNull();
+            transContext.ThrowIfNull(nameof(transContext));
 
             User user = await GetAsync(userGuid, transContext).ConfigureAwait(false);
 
@@ -135,7 +135,7 @@ namespace HB.Component.Identity
 
         public async Task<IdentityResult> SetUserNameAsync(string userGuid, string userName, TransactionContext transContext)
         {
-            transContext.RequireNotNull();
+            transContext.ThrowIfNull(nameof(transContext));
 
             if (userName.IsNullOrEmpty())
             {
@@ -168,7 +168,7 @@ namespace HB.Component.Identity
 
         public async Task<IdentityResult> SetPasswordByMobileAsync(string mobile, string newPassword, TransactionContext transContext)
         {
-            transContext.RequireNotNull();
+            transContext.ThrowIfNull(nameof(transContext));
 
             if (!ValidationMethods.IsMobilePhone(mobile) || !ValidationMethods.IsPassword(newPassword))
             {
@@ -237,7 +237,7 @@ namespace HB.Component.Identity
 
         public async Task<IdentityResult> CreateByMobileAsync(string userType, string mobile, string userName, string password, bool mobileConfirmed, TransactionContext transContext)
         {
-            transContext.RequireNotNull();
+            transContext.ThrowIfNull(nameof(transContext));
 
             #region Argument Check
 

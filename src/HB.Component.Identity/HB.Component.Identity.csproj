@@ -6,6 +6,14 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <CodeAnalysisRuleSet>HB.Component.Identity.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <CodeAnalysisRuleSet>HB.Component.Identity.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\..\HB.Framework.Database\src\HB.Framework.Database\HB.Framework.Database.csproj" />
     <ProjectReference Include="..\..\..\HB.Framework\src\HB.Framework.Cache\HB.Framework.Cache.csproj" />

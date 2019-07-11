@@ -33,6 +33,7 @@ namespace HB.Component.Authorization.Entity
         public string AccessToken { get; set; }
 
         [EntityProperty("", Length = 1024)]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1056:Uri properties should not be strings", Justification = "<Pending>")]
         public string IconUrl { get; set; }
     }
 }

@@ -20,11 +20,13 @@ namespace HB.Component.Authorization
         //public static readonly AuthorizationServerResult NotFound = new AuthorizationServerResult() { Status = AuthorizationServerResultStatus.NotFound };
         //public static readonly AuthorizationServerResult Failed = new AuthorizationServerResult() { Status = AuthorizationServerResultStatus.Failed };
 
+        public Exception Exception { get; set; }
+
         public AuthorizationResult() { }
 
         public AuthorizationResult(DatabaseResult dbResult)
         {
-            switch (dbResult.Status)
+            switch (dbResult.ThrowIfNull(nameof(dbResult)).Status)
             {
                 case DatabaseResultStatus.Failed:
                     Status = AuthorizationResultStatus.Failed;
@@ -61,9 +63,9 @@ namespace HB.Component.Authorization
             return new AuthorizationResult { Status = AuthorizationResultStatus.Succeeded };
         }
 
-        public static AuthorizationResult Throwed()
+        public static AuthorizationResult Throwed(Exception exception)
         {
-            return new AuthorizationResult { Status = AuthorizationResultStatus.ExceptionThrown };
+            return new AuthorizationResult { Status = AuthorizationResultStatus.ExceptionThrown, Exception = exception };
         }
 
         //public static bool operator ==(AuthorizationServerResult left, AuthorizationServerResult right)
