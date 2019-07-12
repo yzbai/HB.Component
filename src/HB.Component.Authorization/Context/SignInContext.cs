@@ -8,7 +8,7 @@ using HB.Framework.Common.Entity;
 namespace HB.Component.Authorization.Abstractions
 {
 
-    public class SignInContext : CommonEntity
+    public class SignInContext : ValidatableObject
     {
         //public HttpContext HttpContext { get; set; }
 
