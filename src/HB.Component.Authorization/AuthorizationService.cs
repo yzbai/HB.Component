@@ -3,7 +3,9 @@ using HB.Component.Authorization.Entity;
 using HB.Component.Identity;
 using HB.Component.Identity.Entity;
 using HB.Framework.Cache;
+using HB.Framework.Common;
 using HB.Framework.Database;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -29,7 +31,7 @@ namespace HB.Component.Authorization
 
         private readonly ILogger logger;
 
-        public AuthorizationService(IDatabase database, IOptions<AuthorizationOptions> options, ILogger<AuthorizationService> logger, IFrequencyChecker frequencyChecker,
+        public AuthorizationService(IDatabase database, IOptions<AuthorizationOptions> options, ILogger<AuthorizationService> logger, IDistributedCache distributedCache,
             ISignInTokenBiz signInTokenBiz, IIdentityService identityManager, IJwtBuilder jwtBuilder, ICredentialBiz credentialManager)
         {
             this.database = database;
@@ -37,7 +39,7 @@ namespace HB.Component.Authorization
             _signInOptions = _options.SignInOptions;
 
             this.logger = logger;
-            _frequencyChecker = frequencyChecker;
+            _frequencyChecker = new DistributedCacheFrequencyChecker(distributedCache);
 
             _signInTokenBiz = signInTokenBiz;
             _identityService = identityManager;
@@ -247,7 +249,7 @@ namespace HB.Component.Authorization
 
             //解决并发涌入
 
-            if (!(await _frequencyChecker.CheckAsync(context.ClientId, _options.RefreshIntervalTimeSpan).ConfigureAwait(false)))
+            if (!(await _frequencyChecker.CheckAsync(nameof(RefreshAccessTokenAsync), context.ClientId, _options.RefreshIntervalTimeSpan).ConfigureAwait(false)))
             {
                 return RefreshResult.TooFrequent();
             }
