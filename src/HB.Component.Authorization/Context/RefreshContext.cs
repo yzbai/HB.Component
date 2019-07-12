@@ -6,7 +6,7 @@ using System.Text;
 
 namespace HB.Component.Authorization.Abstractions
 {
-    public class RefreshContext : CommonEntity
+    public class RefreshContext : ValidatableObject
     {
         [Required]
         public string AccessToken { get; set; }
