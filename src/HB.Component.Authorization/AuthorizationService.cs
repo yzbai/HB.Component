@@ -181,7 +181,7 @@ namespace HB.Component.Authorization
 
                 #region Logoff App Client
 
-                ClientType clientType = ClientTypeChecker.Check(context.ClientType);
+                ClientType clientType = ClientTypeChecker.Check(context.DeviceType);
 
                 if (clientType != ClientType.Web && _signInOptions.AllowOnlyOneAppClient)
                 {
@@ -200,11 +200,11 @@ namespace HB.Component.Authorization
 
                 SignInToken userToken = await _signInTokenBiz.CreateAsync(
                     user.Guid,
-                    context.ClientId,
+                    context.DeviceId,
                     clientType.ToString(),
-                    context.ClientVersion,
-                    context.ClientAddress,
-                    context.ClientIp,
+                    context.DeviceVersion,
+                    context.DeviceAddress,
+                    context.DeviceIp,
                     context.RememberMe ? _signInOptions.RefreshTokenLongExpireTimeSpan : _signInOptions.RefreshTokenShortExpireTimeSpan,
                     transactionContext).ConfigureAwait(false);
 

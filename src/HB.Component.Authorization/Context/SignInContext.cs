@@ -27,11 +27,11 @@ namespace HB.Component.Authorization.Abstractions
         public string Mobile { get; set; }
         public bool RememberMe { get; set; }
 
-        public string ClientId { get; set; }
-        public string ClientType { get; set; }
-        public string ClientVersion { get; set; }
-        public string ClientAddress { get; set; }
-        public string ClientIp { get; set; }
+        public string DeviceId { get; set; }
+        public string DeviceType { get; set; }
+        public string DeviceVersion { get; set; }
+        public string DeviceAddress { get; set; }
+        public string DeviceIp { get; set; }
 
         public string SignToWhere { get; set; }
     }
