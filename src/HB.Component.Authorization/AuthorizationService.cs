@@ -27,7 +27,7 @@ namespace HB.Component.Authorization
         private readonly ISignInTokenBiz _signInTokenBiz;
         private readonly IJwtBuilder _jwtBuilder;
         private readonly ICredentialBiz _credentialBiz;
-        private readonly IFrequencyChecker _frequencyChecker;
+        private readonly DistributedCacheFrequencyChecker _frequencyChecker;
 
         private readonly ILogger logger;
 
@@ -419,7 +419,7 @@ namespace HB.Component.Authorization
 
         private async Task OnPasswordCheckFailedAsync(User user)
         {
-            IdentityResult identityResult = IdentityResult.Failed();
+            IdentityResult identityResult;
 
             if (_signInOptions.RequiredMaxFailedCountCheck)
             {
