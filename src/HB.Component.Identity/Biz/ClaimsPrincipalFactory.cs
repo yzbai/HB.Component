@@ -13,13 +13,11 @@ namespace HB.Component.Identity
 {
     internal class ClaimsPrincipalFactory : IClaimsPrincipalFactory
     {
-        private readonly ILogger _logger;
         private readonly IRoleBiz _roleBiz;
         private readonly IUserClaimBiz _userClaimBiz;
 
-        public ClaimsPrincipalFactory(ILogger<ClaimsPrincipalFactory> logger, IUserClaimBiz userClaims, IRoleBiz roleBiz)
+        public ClaimsPrincipalFactory(IUserClaimBiz userClaims, IRoleBiz roleBiz)
         {
-            _logger = logger;
             _userClaimBiz = userClaims;
             _roleBiz = roleBiz;
         }

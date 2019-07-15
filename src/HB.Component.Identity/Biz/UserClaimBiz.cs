@@ -10,12 +10,10 @@ namespace HB.Component.Identity
     internal class UserClaimBiz : IUserClaimBiz
     {
         private readonly IDatabase _db;
-        private readonly ILogger _logger;
 
-        public UserClaimBiz(IDatabase database, ILogger<UserClaimBiz> logger)
+        public UserClaimBiz(IDatabase database)
         {
             _db = database;
-            _logger = logger;
         }
 
         public Task<IList<UserClaim>> GetAsync(string userGuid, TransactionContext transContext = null)

@@ -13,12 +13,10 @@ namespace HB.Component.Identity
     internal class RoleBiz : IRoleBiz
     {
         private readonly IDatabase _database;
-        private readonly ILogger _logger;
 
-        public RoleBiz(IDatabase database, ILogger<RoleBiz> logger)
+        public RoleBiz(IDatabase database)
         {
             _database = database;
-            _logger = logger;
         }
 
         public Task<IList<Role>> GetByUserGuidAsync(string userGuid, TransactionContext transContext = null)

@@ -29,7 +29,7 @@ namespace HB.Component.Authorization
 
             if (cert == null)
             {
-                logger.LogCritical($"找不到证书 Subject:{_options.CertificateSubject}");
+                _logger.LogCritical($"找不到证书 Subject:{_options.CertificateSubject}");
                 throw new FileNotFoundException(_options.CertificateSubject);
             }
 

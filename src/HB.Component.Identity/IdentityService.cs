@@ -12,15 +12,13 @@ namespace HB.Component.Identity
 {
     internal class IdentityService : IIdentityService
     {
-        private readonly IdentityOptions _options;
         private readonly IUserBiz _userBiz;
         private readonly IClaimsPrincipalFactory claimsFactory;
         private readonly IDatabase database;
         private readonly ILogger logger;
 
-        public IdentityService(IOptions<IdentityOptions> options, IDatabase database, ILogger<IdentityService> logger, IUserBiz userBiz, IClaimsPrincipalFactory claimsFactory)
+        public IdentityService(IDatabase database, ILogger<IdentityService> logger, IUserBiz userBiz, IClaimsPrincipalFactory claimsFactory)
         {
-            _options = options.Value;
             _userBiz = userBiz;
             this.database = database;
             this.logger = logger;
