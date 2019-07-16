@@ -40,7 +40,7 @@ namespace System.Security.Claims
             return principal.GetClaimValue(ClaimExtensionTypes.SignInTokenGuid);
         }
 
-        public static string GetClientId(this ClaimsPrincipal principal)
+        public static string GetDeviceId(this ClaimsPrincipal principal)
         {
             return principal.GetClaimValue(ClaimExtensionTypes.ClientId);
         }
