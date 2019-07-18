@@ -16,7 +16,7 @@ namespace System.Security.Claims
 
         public const string UserGuid = "HB.UserGuid";
 
-        public const string ClientId = "HB.ClientId";
+        public const string DeviceId = "HB.DeviceId";
 
         //public const string Name = ClaimsIdentity.DefaultNameClaimType;
 

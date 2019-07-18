@@ -2,7 +2,7 @@
 
 namespace HB.Component.Authorization.Abstractions
 {
-    internal enum ClientType
+    internal enum DeviceType
     {
         None = 0,
         Android = 1,
@@ -11,19 +11,19 @@ namespace HB.Component.Authorization.Abstractions
         Postman = 4
     }
 
-    internal static class ClientTypeChecker
+    internal static class DeviceTypeChecker
     {
-        public static ClientType Check(string clientType)
+        public static DeviceType Check(string clientType)
         {
-            if (Enum.TryParse<ClientType>(clientType, out ClientType result))
+            if (Enum.TryParse<DeviceType>(clientType, out DeviceType result))
             {
-                if (Enum.IsDefined(typeof(ClientType), result))
+                if (Enum.IsDefined(typeof(DeviceType), result))
                 {
                     return result;
                 }
             }
 
-            return ClientType.None;
+            return DeviceType.None;
         }
     }
 }

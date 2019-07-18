@@ -42,7 +42,7 @@ namespace System.Security.Claims
 
         public static string GetDeviceId(this ClaimsPrincipal principal)
         {
-            return principal.GetClaimValue(ClaimExtensionTypes.ClientId);
+            return principal.GetClaimValue(ClaimExtensionTypes.DeviceId);
         }
         
         //public static string GetAuthtoken(this ClaimsPrincipal principal)

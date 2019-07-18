@@ -1,5 +1,6 @@
 ﻿using HB.Component.Identity;
 using HB.Component.Identity.Entity;
+using HB.Framework.Database;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,26 +25,20 @@ namespace HB.Component.Authorization.Abstractions
         PasswordWrong,
         AuthtokenCreatedFailed,
         ArgumentError,
-        ExceptionThrown
+        ExceptionThrown,
+        NotFound,
+        Failed,
+        TooFrequent,
+        InvalideAccessToken,
+        InvalideUserGuid,
+        NoTokenInStore,
+        UserSecurityStampChanged,
+        UpdateSignInTokenError,
+        InvalideDeviceId,
     }
 
     public class SignInResult
     {
-        //public static readonly SignInResult Success = new SignInResult() { Status = SignInResultStatus.Succeed };
-        //public static readonly SignInResult NewUserCreateFailed = new SignInResult() { Status = SignInResultStatus.NewUserCreateFailed };
-        //public static readonly SignInResult NewUserCreateFailedMobileAlreadyTaken = new SignInResult() { Status = SignInResultStatus.NewUserCreateFailedMobileAlreadyTaken };
-        //public static readonly SignInResult NewUserCreateFailedEmailAlreadyTaken = new SignInResult() { Status = SignInResultStatus.NewUserCreateFailedEmailAlreadyTaken };
-        //public static readonly SignInResult NewUserCreateFailedUserNameAlreadyTaken = new SignInResult() { Status = SignInResultStatus.NewUserCreateFailedUserNameAlreadyTaken };
-        //public static readonly SignInResult LockedOut = new SignInResult() { Status = SignInResultStatus.LockedOut };
-        //public static readonly SignInResult TwoFactorRequired = new SignInResult() { Status = SignInResultStatus.TwoFactorRequired };
-        //public static readonly SignInResult MobileNotConfirmed = new SignInResult() { Status = SignInResultStatus.MobileNotConfirmed };
-        //public static readonly SignInResult EmailNotConfirmed = new SignInResult() { Status = SignInResultStatus.EmailNotConfirmed };
-        //public static readonly SignInResult OverMaxFailedCount = new SignInResult() { Status = SignInResultStatus.OverMaxFailedCount };
-        //public static readonly SignInResult NoSuchUser = new SignInResult() { Status = SignInResultStatus.NoSuchUser };
-        //public static readonly SignInResult PasswordWrong = new SignInResult() { Status = SignInResultStatus.PasswordWrong };
-        //public static readonly SignInResult AuthtokenCreatedFailed = new SignInResult() { Status = SignInResultStatus.AuthtokenCreatedFailed };
-        //public static readonly SignInResult ArgumentError = new SignInResult() { Status = SignInResultStatus.ArgumentError };
-
         public SignInResultStatus Status { get; set; }
         public User CurrentUser { get; set; }
         public bool NewUserCreated { get; set; }
@@ -51,13 +46,15 @@ namespace HB.Component.Authorization.Abstractions
         public string RefreshToken { get; set; }
         public string AccessToken { get; set; }
 
+        public Exception Exception { get; set; }
+
         public bool IsSucceeded()
         {
             return Status == SignInResultStatus.Success;
         }
-        public static SignInResult Throwed()
+        public static SignInResult Throwed(Exception exception = null)
         {
-            return new SignInResult { Status = SignInResultStatus.ExceptionThrown };
+            return new SignInResult { Status = SignInResultStatus.ExceptionThrown, Exception = exception };
         }
 
         public static SignInResult ArgumentError()
@@ -130,36 +127,74 @@ namespace HB.Component.Authorization.Abstractions
             return new SignInResult { Status = SignInResultStatus.LogoffOtherClientFailed };
         }
 
-        //public static bool operator ==(SignInResult left, SignInResult right)
-        //{
-        //    if (System.Object.ReferenceEquals(left, right))
-        //    {
-        //        return true;
-        //    }
+        public static SignInResult TooFrequent()
+        {
+            return new SignInResult { Status = SignInResultStatus.TooFrequent };
+        }
 
-        //    if (((object)left == null) || ((object)right == null))
-        //    {
-        //        return false;
-        //    }
+        public static SignInResult InvalideAccessToken()
+        {
+            return new SignInResult { Status = SignInResultStatus.InvalideAccessToken };
+        }
 
-        //    return left.Status == right.Status;
-        //}
+        public static SignInResult InvalideUserGuid()
+        {
+            return new SignInResult { Status = SignInResultStatus.InvalideUserGuid };
+        }
 
-        //public static bool operator !=(SignInResult left, SignInResult right)
-        //{
-        //    return !(left == right);
-        //}
+        public static SignInResult NoTokenInStore()
+        {
+            return new SignInResult { Status = SignInResultStatus.NoTokenInStore };
+        }
 
-        //public override bool Equals(object obj)
-        //{
-        //    SignInResult result = obj as SignInResult;
+        public static SignInResult UserSecurityStampChanged()
+        {
+            return new SignInResult { Status = SignInResultStatus.UserSecurityStampChanged };
+        }
 
-        //    return this == result;
-        //}
+        public static SignInResult UpdateSignInTokenError()
+        {
+            return new SignInResult { Status = SignInResultStatus.UpdateSignInTokenError };
+        }
 
-        //public override int GetHashCode()
-        //{
-        //    return base.GetHashCode();
-        //}
+        internal static SignInResult InvalideDeviceId()
+        {
+            return new SignInResult { Status = SignInResultStatus.InvalideDeviceId };
+        }
+
+        public SignInResult() { }
+        public SignInResult(DatabaseResult dbResult)
+        {
+            Exception = dbResult?.Exception;
+
+            switch (dbResult.ThrowIfNull(nameof(dbResult)).Status)
+            {
+                case DatabaseResultStatus.Failed:
+                    Status = SignInResultStatus.Failed;
+                    break;
+                case DatabaseResultStatus.NotFound:
+                    Status = SignInResultStatus.NotFound;
+                    break;
+                case DatabaseResultStatus.NotWriteable:
+                    Status = SignInResultStatus.Failed;
+                    break;
+                case DatabaseResultStatus.Succeeded:
+                    Status = SignInResultStatus.Success;
+                    break;
+                default:
+                    Status = SignInResultStatus.Failed;
+                    break;
+            }
+        }
+
+        
+    }
+
+    public static class DatabaseResultExtensions
+    {
+        public static SignInResult ToSignInResult(this DatabaseResult dbResult)
+        {
+            return new SignInResult(dbResult);
+        }
     }
 }
