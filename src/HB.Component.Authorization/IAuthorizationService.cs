@@ -6,9 +6,9 @@ namespace HB.Component.Authorization
 {
     public interface IAuthorizationService
     {
-        Task<RefreshResult> RefreshAccessTokenAsync(RefreshContext context);
+        Task<SignInResult> RefreshAccessTokenAsync(RefreshContext context);
         Task<SignInResult> SignInAsync(SignInContext context);
-        Task<AuthorizationResult> SignOutAsync(string signInTokenGuid);
+        Task<SignInResult> SignOutAsync(string signInTokenGuid);
         JsonWebKeySet GetJsonWebKeySet();
     }
 }

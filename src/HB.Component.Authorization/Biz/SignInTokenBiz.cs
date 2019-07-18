@@ -26,7 +26,7 @@ namespace HB.Component.Authorization
             _logger = logger;
         }
 
-        public async Task<SignInToken> CreateAsync(string userGuid, string clientId, string clientType, string clientVersion, string clientAddress, string ipAddress, TimeSpan expireTimeSpan, TransactionContext transContext = null)
+        public async Task<SignInToken> CreateAsync(string userGuid, string deviceId, string deviceType, string deviceVersion, string deviceAddress, string ipAddress, TimeSpan expireTimeSpan, TransactionContext transContext = null)
         {
             SignInToken token = new SignInToken {
                 Guid = SecurityUtil.CreateUniqueToken(),
@@ -34,15 +34,15 @@ namespace HB.Component.Authorization
                 RefreshToken = SecurityUtil.CreateUniqueToken(),
                 RefreshCount = 0,
                 Blacked = false,
-                ClientId = clientId,
-                ClientType = clientType,
-                ClientVersion = clientVersion,
-                ClientAddress = clientAddress,
-                ClientIp = ipAddress,
+                DeviceId = deviceId,
+                DeviceType = deviceType,
+                DeviceVersion = deviceVersion,
+                DeviceAddress = deviceAddress,
+                DeviceIp = ipAddress,
                 ExpireAt = DateTimeOffset.UtcNow + expireTimeSpan
             };
 
-            AuthorizationResult err = (await _db.AddAsync(token, transContext).ConfigureAwait(false)).ToAuthorizationResult();
+            SignInResult err = (await _db.AddAsync(token, transContext).ConfigureAwait(false)).ToSignInResult();
 
             if (!err.IsSucceeded())
             {
@@ -53,24 +53,24 @@ namespace HB.Component.Authorization
             return token;
         }
 
-        public async Task<AuthorizationResult> DeleteAppClientTokenByUserGuidAsync(string userGuid, TransactionContext transContext)
+        public async Task<SignInResult> DeleteAppClientTokenByUserGuidAsync(string userGuid, TransactionContext transContext)
         {
             if (userGuid.IsNullOrEmpty())
             {
-                return AuthorizationResult.ArgumentError();
+                return SignInResult.ArgumentError();
             }
 
             transContext.ThrowIfNull(nameof(transContext));
 
             WhereExpression<SignInToken> where = _db.Where<SignInToken>()
-                .Where(at => at.ClientType != Enum.GetName(typeof(ClientType), ClientType.Web))
+                .Where(at => at.DeviceType != Enum.GetName(typeof(DeviceType), DeviceType.Web))
                 .And(at => at.UserGuid == userGuid);
 
             IList<SignInToken> resultList = await _db.RetrieveAsync(where, transContext).ConfigureAwait(false);
 
             if (resultList.Count == 0)
             {
-                return AuthorizationResult.Succeeded();
+                return SignInResult.Succeeded();
             }
 
             DatabaseResult dbResult = await _db.BatchDeleteAsync(resultList, "default", transContext).ConfigureAwait(false);
@@ -78,17 +78,17 @@ namespace HB.Component.Authorization
             if (!dbResult.IsSucceeded())
             {
                 _logger.LogCritical(0, $"DeleteAppClientTokenByUserIdAsync delete failed, userId : {userGuid}", null);
-                return dbResult.ToAuthorizationResult();
+                return dbResult.ToSignInResult();
             }
 
-            return dbResult.ToAuthorizationResult();
+            return dbResult.ToSignInResult();
         }
 
-        public async Task<AuthorizationResult> DeleteByUserGuidAsync(string userGuid, TransactionContext transContext)
+        public async Task<SignInResult> DeleteByUserGuidAsync(string userGuid, TransactionContext transContext)
         {
             if (userGuid.IsNullOrEmpty())
             {
-                return AuthorizationResult.ArgumentError();
+                return SignInResult.ArgumentError();
             }
 
             transContext.ThrowIfNull(nameof(transContext));
@@ -100,17 +100,17 @@ namespace HB.Component.Authorization
             if (!dbResult.IsSucceeded())
             {
                 _logger.LogCritical(0, $"DeleteByUserGuidAsync delete failed, userId : {userGuid}", null);
-                return dbResult.ToAuthorizationResult();
+                return dbResult.ToSignInResult();
             }
 
-            return dbResult.ToAuthorizationResult();
+            return dbResult.ToSignInResult();
         }
 
-        public async Task<AuthorizationResult> DeleteAsync(string signInTokenGuid, TransactionContext transContext)
+        public async Task<SignInResult> DeleteAsync(string signInTokenGuid, TransactionContext transContext)
         {
             if (signInTokenGuid.IsNullOrEmpty())
             {
-                return AuthorizationResult.ArgumentError();
+                return SignInResult.ArgumentError();
             }
 
             transContext.ThrowIfNull(nameof(transContext));
@@ -122,13 +122,13 @@ namespace HB.Component.Authorization
             if (!dbResult.IsSucceeded())
             {
                 _logger.LogCritical(0, $"DeleteAsync delete failed, signInTokenGuid : {signInTokenGuid}", null);
-                return dbResult.ToAuthorizationResult();
+                return dbResult.ToSignInResult();
             }
 
-            return dbResult.ToAuthorizationResult();
+            return dbResult.ToSignInResult();
         }
 
-        public async Task<SignInToken> GetAsync(string signInTokenGuid, string refreshToken, string clientId, string userGuid, TransactionContext transContext = null)
+        public async Task<SignInToken> GetAsync(string signInTokenGuid, string refreshToken, string deviceId, string userGuid, TransactionContext transContext = null)
         {
             if (signInTokenGuid.IsNullOrEmpty() || refreshToken.IsNullOrEmpty() || userGuid.IsNullOrEmpty())
             {
@@ -139,17 +139,17 @@ namespace HB.Component.Authorization
                 s.UserGuid == userGuid &&
                 s.Guid == signInTokenGuid &&
                 s.RefreshToken == refreshToken &&
-                s.ClientId == clientId, transContext).ConfigureAwait(false);
+                s.DeviceId == deviceId, transContext).ConfigureAwait(false);
         }
 
-        public async Task<AuthorizationResult> UpdateAsync(SignInToken signInToken, TransactionContext transContext = null)
+        public async Task<SignInResult> UpdateAsync(SignInToken signInToken, TransactionContext transContext = null)
         {
             if (signInToken == null)
             {
-                return AuthorizationResult.ArgumentError();
+                return SignInResult.ArgumentError();
             }
 
-            return (await _db.UpdateAsync(signInToken, transContext).ConfigureAwait(false)).ToAuthorizationResult();
+            return (await _db.UpdateAsync(signInToken, transContext).ConfigureAwait(false)).ToSignInResult();
         }
     }
 }

@@ -39,8 +39,8 @@ namespace HB.Component.Authorization
 
             claims.Add(new Claim(ClaimExtensionTypes.SignInTokenGuid, signInToken.Guid));
 
-            //这个JWT只能在当前ClientId上使用
-            claims.Add(new Claim(ClaimExtensionTypes.ClientId, signInToken.ClientId));
+            //这个JWT只能在当前DeviceId上使用
+            claims.Add(new Claim(ClaimExtensionTypes.DeviceId, signInToken.DeviceId));
 
             JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
 

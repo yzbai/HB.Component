@@ -15,37 +15,37 @@ namespace HB.Component.Authorization.Entity
         public string UserGuid { get; set; }
 
         [Required]
-        [EntityProperty("RefreshToken")]
+        [EntityProperty]
         public string RefreshToken { get; set; }
 
-        [EntityProperty("ExpireAt")]
+        [EntityProperty]
         public DateTimeOffset? ExpireAt { get; set; }
 
-        [EntityProperty("RefreshCount")]
+        [EntityProperty]
         public long RefreshCount { get; set; } = 0;
 
-        [EntityProperty("Blacked")]
+        [EntityProperty]
         public bool Blacked { get; set; } = false;
 
 
-        #region Client
+        #region Device
 
         [Required]
-        [EntityProperty("ClientId")]
-        public string ClientId { get; set; }
+        [EntityProperty]
+        public string DeviceId { get; set; }
 
         [Required]
-        [EntityProperty("ClientType")]
-        public string ClientType { get; set; }
+        [EntityProperty]
+        public string DeviceType { get; set; }
 
-        [EntityProperty("ClientVersion")]
-        public string ClientVersion { get; set; }
+        [EntityProperty]
+        public string DeviceVersion { get; set; }
 
-        [EntityProperty("Address")]
-        public string ClientAddress { get; set; }
+        [EntityProperty]
+        public string DeviceAddress { get; set; }
 
-        [EntityProperty("Client IP")]
-        public string ClientIp { get; set; }
+        [EntityProperty]
+        public string DeviceIp { get; set; }
 
         #endregion
     }

@@ -48,12 +48,12 @@ namespace HB.Component.Authorization
 
         }
 
-        public async Task<AuthorizationResult> SignOutAsync(string signInTokenGuid)
+        public async Task<SignInResult> SignOutAsync(string signInTokenGuid)
         {
             TransactionContext transactionContext = await database.BeginTransactionAsync<SignInToken>().ConfigureAwait(false);
             try
             {
-                AuthorizationResult result = await _signInTokenBiz.DeleteAsync(signInTokenGuid, transactionContext).ConfigureAwait(false);
+                SignInResult result = await _signInTokenBiz.DeleteAsync(signInTokenGuid, transactionContext).ConfigureAwait(false);
 
                 if (!result.IsSucceeded())
                 {
@@ -69,7 +69,7 @@ namespace HB.Component.Authorization
             {
                 await database.RollbackAsync(transactionContext).ConfigureAwait(false);
                 logger.LogCritical(ex, $"SignInTokenGuid:{signInTokenGuid}");
-                return AuthorizationResult.Throwed(ex);
+                return SignInResult.Throwed(ex);
             }
         }
 
@@ -181,11 +181,11 @@ namespace HB.Component.Authorization
 
                 #region Logoff App Client
 
-                ClientType clientType = ClientTypeChecker.Check(context.DeviceType);
+                DeviceType clientType = DeviceTypeChecker.Check(context.DeviceType);
 
-                if (clientType != ClientType.Web && _signInOptions.AllowOnlyOneAppClient)
+                if (clientType != DeviceType.Web && _signInOptions.AllowOnlyOneAppClient)
                 {
-                    AuthorizationResult authorizationResult = await _signInTokenBiz.DeleteAppClientTokenByUserGuidAsync(user.Guid, transactionContext).ConfigureAwait(false);
+                    SignInResult authorizationResult = await _signInTokenBiz.DeleteAppClientTokenByUserGuidAsync(user.Guid, transactionContext).ConfigureAwait(false);
 
                     if (!authorizationResult.IsSucceeded())
                     {
@@ -238,20 +238,20 @@ namespace HB.Component.Authorization
         }
 
         //TODO: 做好详细的历史纪录，各个阶段都要打log。一有风吹草动，就立马删除SignInToken
-        public async Task<RefreshResult> RefreshAccessTokenAsync(RefreshContext context)
+        public async Task<SignInResult> RefreshAccessTokenAsync(RefreshContext context)
         {
             if (!context.IsValid())
             {
-                return RefreshResult.ArgumentError();
+                return SignInResult.ArgumentError();
             }
 
             #region 频率检查
 
             //解决并发涌入
 
-            if (!(await _frequencyChecker.CheckAsync(nameof(RefreshAccessTokenAsync), context.ClientId, _options.RefreshIntervalTimeSpan).ConfigureAwait(false)))
+            if (!(await _frequencyChecker.CheckAsync(nameof(RefreshAccessTokenAsync), context.DeviceId, _options.RefreshIntervalTimeSpan).ConfigureAwait(false)))
             {
-                return RefreshResult.TooFrequent();
+                return SignInResult.TooFrequent();
             }
 
             #endregion
@@ -260,10 +260,19 @@ namespace HB.Component.Authorization
 
             ClaimsPrincipal claimsPrincipal = ValidateTokenWithoutLifeCheck(context);
 
+            
+
+            //TODO: 这里缺DeviceId验证
+
             if (claimsPrincipal == null)
             {
                 //TODO: Black concern SigninToken by RefreshToken
-                return RefreshResult.InvalideAccessToken();
+                return SignInResult.InvalideAccessToken();
+            }
+
+            if (claimsPrincipal.GetDeviceId() != context.DeviceId)
+            {
+                return SignInResult.InvalideDeviceId();
             }
 
             string userGuid = claimsPrincipal.GetUserGuid();
@@ -271,7 +280,7 @@ namespace HB.Component.Authorization
             if (string.IsNullOrEmpty(userGuid))
             {
                 logger.LogWarning($"Refresh token error. UserGuid should not empty. Context : {JsonUtil.ToJson(context)}");
-                return RefreshResult.InvalideUserGuid();
+                return SignInResult.InvalideUserGuid();
             }
 
             #endregion
@@ -287,7 +296,7 @@ namespace HB.Component.Authorization
                 signInToken = await _signInTokenBiz.GetAsync(
                     claimsPrincipal.GetSignInTokenGuid(),
                     context.RefreshToken,
-                    context.ClientId,
+                    context.DeviceId,
                     userGuid,
                     transactionContext
                     ).ConfigureAwait(false);
@@ -296,7 +305,7 @@ namespace HB.Component.Authorization
                 {
                     await database.RollbackAsync(transactionContext).ConfigureAwait(false);
                     logger.LogWarning("Refresh token error. signInToken not saved in db. Context : {0}", JsonUtil.ToJson(context));
-                    return RefreshResult.NoTokenInStore();
+                    return SignInResult.NoTokenInStore();
                 }
 
                 #endregion
@@ -313,7 +322,7 @@ namespace HB.Component.Authorization
 
                     logger.LogWarning("Refresh token error. User SecurityStamp Changed. Context : {0}", JsonUtil.ToJson(context));
 
-                    return RefreshResult.UserSecurityStampChanged();
+                    return SignInResult.UserSecurityStampChanged();
                 }
 
                 #endregion
@@ -322,14 +331,14 @@ namespace HB.Component.Authorization
 
                 signInToken.RefreshCount++;
 
-                AuthorizationResult authorizationServerResult = await _signInTokenBiz.UpdateAsync(signInToken, transactionContext).ConfigureAwait(false);
+                SignInResult authorizationServerResult = await _signInTokenBiz.UpdateAsync(signInToken, transactionContext).ConfigureAwait(false);
 
                 if (!authorizationServerResult.IsSucceeded())
                 {
                     await database.RollbackAsync(transactionContext).ConfigureAwait(false);
 
                     logger.LogError("Refresh token error. Update SignIn Error. Context : {0}", JsonUtil.ToJson(context));
-                    return RefreshResult.UpdateSignInTokenError();
+                    return SignInResult.UpdateSignInTokenError();
                 }
 
                 #endregion
@@ -342,12 +351,12 @@ namespace HB.Component.Authorization
                 await database.RollbackAsync(transactionContext).ConfigureAwait(false);
                 logger.LogCritical(ex, $"RefreshContext:{JsonUtil.ToJson(context)}");
 
-                return RefreshResult.Throwed();
+                return SignInResult.Throwed();
             }
 
             #region 发布新的AccessToken
 
-            RefreshResult result = new RefreshResult() { Status = RefreshResultStatus.Succeeded };
+            SignInResult result = SignInResult.Succeeded();
 
             result.AccessToken = await _jwtBuilder.BuildJwtAsync(user, signInToken, claimsPrincipal.GetAudience()).ConfigureAwait(false);
 
@@ -451,7 +460,7 @@ namespace HB.Component.Authorization
             TransactionContext transactionContext = await database.BeginTransactionAsync<SignInToken>().ConfigureAwait(false);
             try
             {
-                AuthorizationResult result = await _signInTokenBiz.DeleteAsync(signInToken.Guid, transactionContext).ConfigureAwait(false);
+                SignInResult result = await _signInTokenBiz.DeleteAsync(signInToken.Guid, transactionContext).ConfigureAwait(false);
 
                 if (!result.IsSucceeded())
                 {

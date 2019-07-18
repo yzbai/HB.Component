@@ -15,9 +15,9 @@ namespace HB.Component.Authorization.Abstractions
         public string RefreshToken { get; set; }
 
         [Required]
-        public string ClientId { get; set; }
-        public string ClientType { get; set; }
-        public string ClientVersion { get; set; }
-        public string ClientAddress { get; set; }
+        public string DeviceId { get; set; }
+        public string DeviceType { get; set; }
+        public string DeviceVersion { get; set; }
+        public string DeviceAddress { get; set; }
     }
 }
