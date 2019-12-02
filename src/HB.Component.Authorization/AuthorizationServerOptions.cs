@@ -21,7 +21,6 @@ namespace HB.Component.Authorization
 
         public OpenIdConnectConfiguration OpenIdConnectConfiguration { get; set; }
 
-        //public JsonWebKeySet JsonWebKeys { get; set; }
 
         /// <summary>
         /// 连续两次请求Refresh最小时间间隔

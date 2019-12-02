@@ -1,12 +1,10 @@
-﻿using HB.Framework.Database;
-using HB.Framework.Database.SQL;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
-using HB.Component.Identity.Abstractions;
+﻿using HB.Component.Identity.Abstractions;
 using HB.Component.Identity.Entity;
+using HB.Framework.Database;
+using HB.Framework.Database.SQL;
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace HB.Component.Identity
 {

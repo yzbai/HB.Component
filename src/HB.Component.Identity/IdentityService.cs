@@ -12,41 +12,38 @@ namespace HB.Component.Identity
 {
     internal class IdentityService : IIdentityService
     {
+        //private readonly ILogger _logger;
+        private readonly IDatabase _database;
         private readonly IUserBiz _userBiz;
-        private readonly IClaimsPrincipalFactory claimsFactory;
-        private readonly IDatabase database;
-        private readonly ILogger logger;
+        private readonly IClaimsPrincipalFactory _claimsFactory;
 
-        public IdentityService(IDatabase database, ILogger<IdentityService> logger, IUserBiz userBiz, IClaimsPrincipalFactory claimsFactory)
+        public IdentityService(IDatabase database, IUserBiz userBiz, IClaimsPrincipalFactory claimsFactory/*, ILogger<IdentityService> logger*/)
         {
             _userBiz = userBiz;
-            this.database = database;
-            this.logger = logger;
-            this.claimsFactory = claimsFactory;
+            _database = database;
+            //this._logger = logger;
+            _claimsFactory = claimsFactory;
         }
 
-        public async Task<IdentityResult> CreateUserByMobileAsync(string userType, string mobile, string userName, string password, bool mobileConfirmed)
+        public async Task<User> CreateUserByMobileAsync(string userType, string mobile, string userName, string password, bool mobileConfirmed)
         {
-            TransactionContext transactionContext = await database.BeginTransactionAsync<User>().ConfigureAwait(false);
+            TransactionContext transactionContext = await _database.BeginTransactionAsync<User>().ConfigureAwait(false);
             try
             {
-                IdentityResult result = await _userBiz.CreateByMobileAsync(userType, mobile, userName, password, mobileConfirmed, transactionContext).ConfigureAwait(false);
+                User user = await _userBiz.CreateByMobileAsync(userType, mobile, userName, password, mobileConfirmed, transactionContext).ConfigureAwait(false);
 
-                if (!result.IsSucceeded())
-                {
-                    await database.RollbackAsync(transactionContext).ConfigureAwait(false);
-                    return result;
-                }
+                await _database.CommitAsync(transactionContext).ConfigureAwait(false);
 
-                await database.CommitAsync(transactionContext).ConfigureAwait(false);
-
-                return result;
+                return user;
             }
             catch(Exception ex)
             {
-                await database.RollbackAsync(transactionContext).ConfigureAwait(false);
-                logger.LogCritical(ex, $"UserType :{userType}, Mobile:{mobile}");
-                return IdentityResult.Throwed();
+                await _database.RollbackAsync(transactionContext).ConfigureAwait(false);
+
+                //TODO: 思考，这里需要记录吗，还是在调用者那里记录
+                //_logger.LogException(ex);
+
+                throw ex;
             }
         }
 
@@ -60,54 +57,36 @@ namespace HB.Component.Identity
             return _userBiz.GetByUserNameAsync(userName);
         }
 
-        public async Task<IdentityResult> SetAccessFailedCountAsync(string userGuid, long count)
+        public async Task SetAccessFailedCountAsync(string userGuid, long count)
         {
-            TransactionContext transactionContext = await database.BeginTransactionAsync<User>().ConfigureAwait(false);
+            TransactionContext transactionContext = await _database.BeginTransactionAsync<User>().ConfigureAwait(false);
             try
             {
-                IdentityResult result = await _userBiz.SetAccessFailedCountAsync(userGuid, count, transactionContext).ConfigureAwait(false);
+                await _userBiz.SetAccessFailedCountAsync(userGuid, count, transactionContext).ConfigureAwait(false);
 
-                if (!result.IsSucceeded())
-                {
-                    await database.RollbackAsync(transactionContext).ConfigureAwait(false);
-                    return result;
-                }
-
-                await database.CommitAsync(transactionContext).ConfigureAwait(false);
-
-                return result;
+                await _database.CommitAsync(transactionContext).ConfigureAwait(false);
             }
             catch(Exception ex)
             {
-                await database.RollbackAsync(transactionContext).ConfigureAwait(false);
-                logger.LogCritical(ex, $"UserGuid:{userGuid}, Count:{count}");
-                return IdentityResult.Throwed();
+                await _database.RollbackAsync(transactionContext).ConfigureAwait(false);
+                throw ex;
             }
         }
 
-        public async Task<IdentityResult> SetLockoutAsync(string userGuid, bool lockout, TimeSpan? lockoutTimeSpan = null)
+        public async Task SetLockoutAsync(string userGuid, bool lockout, TimeSpan? lockoutTimeSpan = null)
         {
-            TransactionContext transactionContext = await database.BeginTransactionAsync<User>().ConfigureAwait(false);
+            TransactionContext transactionContext = await _database.BeginTransactionAsync<User>().ConfigureAwait(false);
 
             try
             {
-                IdentityResult result = await _userBiz.SetLockoutAsync(userGuid, lockout, transactionContext, lockoutTimeSpan).ConfigureAwait(false);
+                await _userBiz.SetLockoutAsync(userGuid, lockout, transactionContext, lockoutTimeSpan).ConfigureAwait(false);
 
-                if (!result.IsSucceeded())
-                {
-                    await database.RollbackAsync(transactionContext).ConfigureAwait(false);
-                    return result;
-                }
-
-                await database.CommitAsync(transactionContext).ConfigureAwait(false);
-
-                return result;
+                await _database.CommitAsync(transactionContext).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                await database.RollbackAsync(transactionContext).ConfigureAwait(false);
-                logger.LogCritical(ex, $"UserGuid:{userGuid}");
-                return IdentityResult.Throwed();
+                await _database.RollbackAsync(transactionContext).ConfigureAwait(false);
+                throw ex;
             }
         }
 
@@ -118,20 +97,19 @@ namespace HB.Component.Identity
 
         public async Task<IList<Claim>> GetUserClaimAsync(User user)
         {
-            TransactionContext transactionContext = await database.BeginTransactionAsync<User>().ConfigureAwait(false);
+            TransactionContext transactionContext = await _database.BeginTransactionAsync<User>().ConfigureAwait(false);
             try
             {
-                IList<Claim> claims = await claimsFactory.CreateClaimsAsync(user, transactionContext).ConfigureAwait(false);
+                IList<Claim> claims = await _claimsFactory.CreateClaimsAsync(user, transactionContext).ConfigureAwait(false);
 
-                await database.CommitAsync(transactionContext).ConfigureAwait(false);
+                await _database.CommitAsync(transactionContext).ConfigureAwait(false);
 
                 return claims;
             }
             catch (Exception ex)
             {
-                await database.RollbackAsync(transactionContext).ConfigureAwait(false);
-                logger.LogCritical(ex, $"User :{JsonUtil.ToJson(user)}");
-                return new List<Claim>();
+                await _database.RollbackAsync(transactionContext).ConfigureAwait(false);
+                throw ex;
             }
         }
     }

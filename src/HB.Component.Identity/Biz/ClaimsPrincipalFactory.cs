@@ -1,13 +1,11 @@
 ﻿using HB.Component.Identity.Abstractions;
 using HB.Component.Identity.Entity;
 using HB.Framework.Database;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using System.Linq;
 
 namespace HB.Component.Identity
 {
@@ -22,6 +20,12 @@ namespace HB.Component.Identity
             _roleBiz = roleBiz;
         }
 
+        /// <summary>
+        /// 在Claims中放入UserGuid, SecurityStamp, UserClaim表中声明加入JWT的, 所有roleName 
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="transContext"></param>
+        /// <returns></returns>
         public async Task<IList<Claim>> CreateClaimsAsync(User user, TransactionContext transContext)
         {
             ThrowIf.Null(transContext, nameof(transContext));
@@ -50,7 +54,7 @@ namespace HB.Component.Identity
 
             IList<Role> roles = await _roleBiz.GetByUserGuidAsync(user.Guid, transContext).ConfigureAwait(false);
 
-            foreach (string roleName in roles.Select(r=>r.Name))
+            foreach (string roleName in roles.Select(r => r.Name))
             {
                 claims.Add(new Claim(ClaimExtensionTypes.Role, roleName));
             }

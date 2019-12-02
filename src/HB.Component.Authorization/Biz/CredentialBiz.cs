@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.IdentityModel.Tokens;
-using System.Security.Cryptography.X509Certificates;
-using Microsoft.Extensions.Options;
-using System.IO;
-using HB.Framework.Common;
-using HB.Component.Authorization.Abstractions;
-using System.Security.Cryptography;
-using System.Security;
+﻿using HB.Component.Authorization.Abstractions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 
 namespace HB.Component.Authorization
 {
@@ -36,7 +33,7 @@ namespace HB.Component.Authorization
             X509SecurityKey securityKey = new X509SecurityKey(cert);
 
             _signingCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.RsaSha256Signature);
-                        
+
             RSA publicKey = securityKey.PublicKey as RSA;
             RSAParameters parameters = publicKey.ExportParameters(false);
 
@@ -50,7 +47,7 @@ namespace HB.Component.Authorization
                 }
             };
 
-            string jsonString = JsonUtil.ToJson(new { Keys = jsonWebKeys });
+            string jsonString = SerializeUtil.ToJson(new { Keys = jsonWebKeys });
 
             _jsonWebKeySet = new JsonWebKeySet(jsonString);
         }

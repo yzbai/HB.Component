@@ -1,12 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Configuration;
+﻿using HB.Component.Authorization;
 using HB.Component.Authorization.Abstractions;
-using HB.Component.Authorization;
+using Microsoft.Extensions.Configuration;
+using System;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
