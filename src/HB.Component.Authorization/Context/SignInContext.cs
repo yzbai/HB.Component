@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using HB.Framework.Common;
 using System.ComponentModel.DataAnnotations;
-using HB.Framework.Common;
 
 namespace HB.Component.Authorization.Abstractions
 {

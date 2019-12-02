@@ -19,71 +19,57 @@ namespace HB.Component.Identity
     internal class UserBiz : IUserBiz
     {
         private readonly IDatabase _db;
-        private readonly ILogger _logger;
+        //private readonly ILogger _logger;
         private readonly IdentityOptions _identityOptions;
 
-        public UserBiz(IOptions<IdentityOptions> identityOptions, IDatabase database, ILogger<UserBiz> logger)
+        public UserBiz(IOptions<IdentityOptions> identityOptions, IDatabase database/*, ILogger<UserBiz> logger*/)
         {
             _identityOptions = identityOptions.Value;
             _db = database;
-            _logger = logger;
         }
 
         #region Retrieve
 
         public async Task<User> ValidateSecurityStampAsync(string userGuid, string securityStamp, TransactionContext transContext = null)
         {
-            if (userGuid.IsNullOrEmpty() || securityStamp.IsNullOrEmpty())
-            {
-                return null;
-            }
+            ThrowIf.NullOrEmpty(userGuid, nameof(userGuid));
+            ThrowIf.NullOrEmpty(securityStamp, nameof(securityStamp));
 
             return await _db.ScalarAsync<User>(u => u.Guid == userGuid && u.SecurityStamp == securityStamp, transContext).ConfigureAwait(false);
         }
 
         public Task<User> GetAsync(string userGuid, TransactionContext transContext = null)
         {
-            if (userGuid.IsNullOrEmpty())
-            {
-                return null;
-            }
+            ThrowIf.NullOrEmpty(userGuid, nameof(userGuid));
 
             return _db.ScalarAsync<User>(u => u.Guid == userGuid, transContext);
         }
 
         public Task<User> GetByMobileAsync(string mobile, TransactionContext transContext = null)
         {
-            if (!ValidationMethods.IsMobilePhone(mobile))
-            {
-                return null;
-            }
+            ThrowIf.NullOrNotMobile(mobile, nameof(mobile));
 
             return _db.ScalarAsync<User>(u => u.Mobile == mobile, transContext);
         }
 
         public Task<User> GetByUserNameAsync(string userName, TransactionContext transContext = null)
         {
-            if (!ValidationMethods.IsUserName(userName)) { return null; }
+            ThrowIf.NullOrNotUserName(userName, nameof(userName));
 
             return _db.ScalarAsync<User>(u => u.UserName == userName, transContext);
         }
 
         public Task<User> GetByEmailAsync(string email, TransactionContext transContext = null)
         {
-            if (!ValidationMethods.IsEmail(email))
-            {
-                return null;
-            }
+            ThrowIf.NullOrNotEmail(email, nameof(email));
 
             return _db.ScalarAsync<User>(u => u.Email.Equals(email, GlobalSettings.ComparisonIgnoreCase), transContext);
         }
 
         public Task<IList<User>> GetAsync(IEnumerable<string> userGuids, TransactionContext transContext = null)
         {
-            if (userGuids == null || userGuids.Count() == 0)
-            {
-                return Task.FromResult<IList<User>>(new List<User>());
-            }
+            ThrowIf.AnyNull(userGuids, nameof(userGuids));
+
             return _db.RetrieveAsync<User>(u => SQLUtil.In(u.Guid, true, userGuids.ToArray()), transContext);
         }
 
@@ -91,7 +77,7 @@ namespace HB.Component.Identity
 
         #region Update
 
-        public async Task<IdentityResult> SetLockoutAsync(string userGuid, bool lockout, TransactionContext transContext, TimeSpan? lockoutTimeSpan = null)
+        public async Task SetLockoutAsync(string userGuid, bool lockout, TransactionContext transContext, TimeSpan? lockoutTimeSpan = null)
         {
             transContext.ThrowIfNull(nameof(transContext));
 
@@ -99,7 +85,7 @@ namespace HB.Component.Identity
 
             if (user == null)
             {
-                return IdentityResult.NotFound();
+                throw new IdentityException(IdentityError.NotFound, $"userGuid:{userGuid}, lockout:{lockout}, lockoutTimeSpan:{lockoutTimeSpan?.TotalSeconds}" );
             }
 
             user.LockoutEnabled = lockout;
@@ -109,10 +95,10 @@ namespace HB.Component.Identity
                 user.LockoutEndDate = DateTimeOffset.UtcNow + (lockoutTimeSpan == null ? lockoutTimeSpan.Value : TimeSpan.FromDays(1));
             }
 
-            return (await _db.UpdateAsync(user, transContext).ConfigureAwait(false)).ToIdentityResult();
+            await _db.UpdateAsync(user, transContext).ConfigureAwait(false);
         }
 
-        public async Task<IdentityResult> SetAccessFailedCountAsync(string userGuid, long count, TransactionContext transContext)
+        public async Task SetAccessFailedCountAsync(string userGuid, long count, TransactionContext transContext)
         {
             transContext.ThrowIfNull(nameof(transContext));
 
@@ -120,7 +106,7 @@ namespace HB.Component.Identity
 
             if (user == null)
             {
-                return IdentityResult.NotFound();
+                throw new IdentityException(IdentityError.NotFound, $"userGuid:{userGuid}, count:{count}");
             }
 
             if (count != 0)
@@ -130,76 +116,56 @@ namespace HB.Component.Identity
 
             user.AccessFailedCount = count;
 
-            return (await _db.UpdateAsync(user, transContext).ConfigureAwait(false)).ToIdentityResult();
+            await _db.UpdateAsync(user, transContext).ConfigureAwait(false);
         }
 
-        public async Task<IdentityResult> SetUserNameAsync(string userGuid, string userName, TransactionContext transContext)
+        public async Task SetUserNameAsync(string userGuid, string userName, TransactionContext transContext)
         {
-            transContext.ThrowIfNull(nameof(transContext));
-
-            if (userName.IsNullOrEmpty())
-            {
-                return IdentityResult.ArgumentError();
-            }
+            ThrowIf.Null(transContext, nameof(transContext));
+            ThrowIf.NullOrEmpty(userGuid, nameof(userGuid));
+            ThrowIf.NullOrEmpty(userName, nameof(userName));
 
             User user = await GetAsync(userGuid, transContext).ConfigureAwait(false);
 
             if (user == null)
             {
-                return IdentityResult.NotFound();
+                throw new IdentityException(IdentityError.NotFound, $"userGuid:{userGuid}");
             }
 
             if (!user.UserName.Equals(userName, GlobalSettings.Comparison) && 0 != await _db.CountAsync<User>(u => u.UserName == userName, transContext).ConfigureAwait(false))
             {
-                return IdentityResult.AlreadyExists();
+                throw new IdentityException(IdentityError.AlreadyExists, $"userGuid:{userGuid}, userName:{userName}");
             }
 
             user.UserName = userName;
 
-            IdentityResult result = await ChangeSecurityStampAsync(user).ConfigureAwait(false);
+            await ChangeSecurityStampAsync(user).ConfigureAwait(false);
 
-            if (!result.IsSucceeded())
-            {
-                return result;
-            }
-
-            return (await _db.UpdateAsync(user, transContext).ConfigureAwait(false)).ToIdentityResult();
+            await _db.UpdateAsync(user, transContext).ConfigureAwait(false);
         }
 
-        public async Task<IdentityResult> SetPasswordByMobileAsync(string mobile, string newPassword, TransactionContext transContext)
+        public async Task SetPasswordByMobileAsync(string mobile, string newPassword, TransactionContext transContext)
         {
-            transContext.ThrowIfNull(nameof(transContext));
-
-            if (!ValidationMethods.IsMobilePhone(mobile) || !ValidationMethods.IsPassword(newPassword))
-            {
-                return IdentityResult.ArgumentError();
-            }
+            ThrowIf.NullOrNotMobile(mobile, nameof(mobile));
+            ThrowIf.NullOrNotPassword(mobile, nameof(newPassword));
 
             User user = await GetByMobileAsync(mobile, transContext).ConfigureAwait(false);
 
             if (user == null)
             {
-                return IdentityResult.NotFound();
+                throw new IdentityException(IdentityError.NotFound, $"mobile:{mobile}");
             }
 
             user.PasswordHash = SecurityUtil.EncryptPwdWithSalt(newPassword, user.Guid);
 
-            IdentityResult result = await ChangeSecurityStampAsync(user).ConfigureAwait(false);
+            await ChangeSecurityStampAsync(user).ConfigureAwait(false);
 
-            if (!result.IsSucceeded())
-            {
-                return result;
-            }
-
-            return (await _db.UpdateAsync(user, transContext).ConfigureAwait(false)).ToIdentityResult();
+            await _db.UpdateAsync(user, transContext).ConfigureAwait(false);
         }
 
-        private async Task<IdentityResult> ChangeSecurityStampAsync(User user)
+        private async Task ChangeSecurityStampAsync(User user)
         {
-            if (user == null)
-            {
-                return IdentityResult.ArgumentError();
-            }
+            ThrowIf.Null(user, nameof(user));
 
             user.SecurityStamp = SecurityUtil.CreateUniqueToken();
 
@@ -208,8 +174,6 @@ namespace HB.Component.Identity
                 IdentitySecurityStampChangeContext context = new IdentitySecurityStampChangeContext(user.Guid);
                 await _identityOptions.Events.SecurityStampChanged(context).ConfigureAwait(false);
             }
-
-            return IdentityResult.Succeeded();
         }
 
         #endregion
@@ -235,31 +199,12 @@ namespace HB.Component.Identity
             return user;
         }
 
-        public async Task<IdentityResult> CreateByMobileAsync(string userType, string mobile, string userName, string password, bool mobileConfirmed, TransactionContext transContext)
+        public async Task<User> CreateByMobileAsync(string userType, string mobile, string userName, string password, bool mobileConfirmed, TransactionContext transContext)
         {
-            transContext.ThrowIfNull(nameof(transContext));
-
-            #region Argument Check
-
-            if (string.IsNullOrEmpty(userType))
-            {
-                _logger.LogDebug("In UserType Check, Failed, userType :" + userType);
-                return IdentityResult.Failed();
-            }
-
-            if (!string.IsNullOrEmpty(mobile) && !ValidationMethods.IsMobilePhone(mobile))
-            {
-                _logger.LogDebug("In Mobile Check, Failed, Mobile :" + mobile);
-                return IdentityResult.Failed();
-            }
-
-            if (!string.IsNullOrEmpty(userName) && !ValidationMethods.IsUserName(userName))
-            {
-                _logger.LogDebug("In UserName Check, Failed, UserName :" + userName);
-                return IdentityResult.Failed();
-            }
-
-            #endregion
+            ThrowIf.Null(transContext, nameof(transContext));
+            ThrowIf.NullOrEmpty(userType, nameof(transContext));
+            ThrowIf.NullOrNotMobile(mobile, nameof(mobile));
+            ThrowIf.NullOrNotPassword(password, nameof(password));
 
             #region Existense Check
 
@@ -267,7 +212,7 @@ namespace HB.Component.Identity
 
             if (user != null)
             {
-                return IdentityResult.MobileAlreadyTaken();
+                throw new IdentityException(IdentityError.MobileAlreadyTaken, $"userType:{userType}, mobile:{mobile}, userName:{userName}");
             }
 
             if (!string.IsNullOrEmpty(userName))
@@ -276,7 +221,7 @@ namespace HB.Component.Identity
 
                 if (tmpUser != null)
                 {
-                    return IdentityResult.UserNameAlreadyTaken();
+                    throw new IdentityException(IdentityError.UserNameAlreadyTaken, $"userType:{userType}, mobile:{mobile}, userName:{userName}");
                 }
             }
 
@@ -285,18 +230,9 @@ namespace HB.Component.Identity
             user = InitNew(userType, mobile, userName, password);
             user.MobileConfirmed = mobileConfirmed;
 
-            IdentityResult result = user.IsValid() ? (await _db.AddAsync(user, transContext).ConfigureAwait(false)).ToIdentityResult() : IdentityResult.ArgumentError();
+            await _db.AddAsync(user, transContext).ConfigureAwait(false);
 
-            if (result.IsSucceeded())
-            {
-                result.User = user;
-
-                return result;
-            }
-
-            _logger.LogDebug("In User Adding, Failed, User :" + JsonUtil.ToJson(user));
-
-            return result;
+            return user;
         }
 
         #endregion

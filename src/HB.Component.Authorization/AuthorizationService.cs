@@ -2,25 +2,21 @@
 using HB.Component.Authorization.Entity;
 using HB.Component.Identity;
 using HB.Component.Identity.Entity;
-using HB.Framework.Cache;
-using HB.Framework.Common;
 using HB.Framework.Database;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace HB.Component.Authorization
 {
     internal class AuthorizationService : IAuthorizationService
     {
-        private readonly IDatabase database;
+        private readonly IDatabase _database;
         private readonly AuthorizationOptions _options;
         private readonly SignInOptions _signInOptions;
         private readonly IIdentityService _identityService;
@@ -29,16 +25,16 @@ namespace HB.Component.Authorization
         private readonly ICredentialBiz _credentialBiz;
         private readonly DistributedCacheFrequencyChecker _frequencyChecker;
 
-        private readonly ILogger logger;
+        //private readonly ILogger logger;
 
-        public AuthorizationService(IDatabase database, IOptions<AuthorizationOptions> options, ILogger<AuthorizationService> logger, IDistributedCache distributedCache,
-            ISignInTokenBiz signInTokenBiz, IIdentityService identityManager, IJwtBuilder jwtBuilder, ICredentialBiz credentialManager)
+        public AuthorizationService(IDatabase database, IOptions<AuthorizationOptions> options, IDistributedCache distributedCache,
+            ISignInTokenBiz signInTokenBiz, IIdentityService identityManager, IJwtBuilder jwtBuilder, ICredentialBiz credentialManager/*, ILogger<AuthorizationService> logger*/)
         {
-            this.database = database;
+            _database = database;
             _options = options.Value;
             _signInOptions = _options.SignInOptions;
 
-            this.logger = logger;
+            //this.logger = logger;
             _frequencyChecker = new DistributedCacheFrequencyChecker(distributedCache);
 
             _signInTokenBiz = signInTokenBiz;
@@ -48,156 +44,82 @@ namespace HB.Component.Authorization
 
         }
 
-        public async Task<SignInResult> SignOutAsync(string signInTokenGuid)
+        public JsonWebKeySet GetJsonWebKeySet()
         {
-            TransactionContext transactionContext = await database.BeginTransactionAsync<SignInToken>().ConfigureAwait(false);
+            return _credentialBiz.GetJsonWebKeySet();
+        }
+
+        public async Task SignOutAsync(string signInTokenGuid)
+        {
+            TransactionContext transactionContext = await _database.BeginTransactionAsync<SignInToken>().ConfigureAwait(false);
             try
             {
-                SignInResult result = await _signInTokenBiz.DeleteAsync(signInTokenGuid, transactionContext).ConfigureAwait(false);
+                await _signInTokenBiz.DeleteAsync(signInTokenGuid, transactionContext).ConfigureAwait(false);
 
-                if (!result.IsSucceeded())
-                {
-                    await database.RollbackAsync(transactionContext).ConfigureAwait(false);
-                    return result;
-                }
-
-                await database.CommitAsync(transactionContext).ConfigureAwait(false);
-
-                return result;
+                await _database.CommitAsync(transactionContext).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                await database.RollbackAsync(transactionContext).ConfigureAwait(false);
-                logger.LogCritical(ex, $"SignInTokenGuid:{signInTokenGuid}");
-                return SignInResult.Throwed(ex);
+                await _database.RollbackAsync(transactionContext).ConfigureAwait(false);
+                throw ex;
             }
         }
 
         public async Task<SignInResult> SignInAsync(SignInContext context)
         {
-            TransactionContext transactionContext = await database.BeginTransactionAsync<SignInToken>().ConfigureAwait(false);
+            ThrowIf.NullOrNotValid(context, nameof(context));
+
+            TransactionContext transactionContext = await _database.BeginTransactionAsync<SignInToken>().ConfigureAwait(false);
 
             try
             {
-                #region Retrieve User
-
-                User user = null;
-
-                if (!context.IsValid())
+                //查询用户
+                User user = context.SignInType switch
                 {
-                    return SignInResult.ArgumentError();
-                }
+                    SignInType.ByUserNameAndPassword => await _identityService.GetUserByUserNameAsync(context.UserName).ConfigureAwait(false),
+                    SignInType.BySms => await _identityService.GetUserByMobileAsync(context.Mobile).ConfigureAwait(false),
+                    SignInType.ByMobileAndPassword => await _identityService.GetUserByMobileAsync(context.Mobile).ConfigureAwait(false),
+                    _ => null
+                };
 
-                if (context.SignInType == SignInType.BySms)
-                {
-                    if (string.IsNullOrEmpty(context.Mobile))
-                    {
-                        return SignInResult.ArgumentError();
-                    }
-
-                    user = await _identityService.GetUserByMobileAsync(context.Mobile).ConfigureAwait(false);
-                }
-                else if (context.SignInType == SignInType.ByMobileAndPassword)
-                {
-                    if (string.IsNullOrEmpty(context.Mobile) || string.IsNullOrEmpty(context.Password))
-                    {
-                        return SignInResult.ArgumentError();
-                    }
-
-                    user = await _identityService.GetUserByMobileAsync(context.Mobile).ConfigureAwait(false);
-                }
-                else if (context.SignInType == SignInType.ByUserNameAndPassword)
-                {
-                    if (string.IsNullOrEmpty(context.UserName) || string.IsNullOrEmpty(context.Password))
-                    {
-                        return SignInResult.ArgumentError();
-                    }
-
-                    user = await _identityService.GetUserByUserNameAsync(context.UserName).ConfigureAwait(false);
-                }
-
-                #endregion
-
-                #region New User 
-
+                //不存在，则新建用户
                 bool newUserCreated = false;
 
                 if (user == null && context.SignInType == SignInType.BySms)
                 {
-                    IdentityResult identityResult = await _identityService.CreateUserByMobileAsync(context.UserType, context.Mobile, context.UserName, context.Password, true).ConfigureAwait(false);
-
-                    if (identityResult.Status == IdentityResultStatus.Failed)
-                    {
-                        return SignInResult.NewUserCreateFailed();
-                    }
-                    else if (identityResult.Status == IdentityResultStatus.EmailAlreadyTaken)
-                    {
-                        return SignInResult.NewUserCreateFailedEmailAlreadyTaken();
-                    }
-                    else if (identityResult.Status == IdentityResultStatus.MobileAlreadyTaken)
-                    {
-                        return SignInResult.NewUserCreateFailedMobileAlreadyTaken();
-                    }
-                    else if (identityResult.Status == IdentityResultStatus.UserNameAlreadyTaken)
-                    {
-                        return SignInResult.NewUserCreateFailedUserNameAlreadyTaken();
-                    }
+                    user = await _identityService.CreateUserByMobileAsync(context.UserType, context.Mobile, context.UserName, context.Password, true).ConfigureAwait(false);
 
                     newUserCreated = true;
-
-                    user = identityResult.User;
                 }
 
                 if (user == null)
                 {
-                    return SignInResult.NoSuchUser();
+                    throw new AuthorizationException(AuthorizationError.NoSuchUser, $"SignInContext:{SerializeUtil.ToJson(context)}");
                 }
 
-                #endregion
-
-                #region Password Check
-
+                //密码检查
                 if (context.SignInType == SignInType.ByMobileAndPassword || context.SignInType == SignInType.ByUserNameAndPassword)
                 {
                     if (!PassowrdCheck(user, context.Password))
                     {
                         await OnPasswordCheckFailedAsync(user).ConfigureAwait(false);
-                        return SignInResult.PasswordWrong();
+
+                        throw new AuthorizationException(AuthorizationError.PasswordWrong, $"SignInContext:{SerializeUtil.ToJson(context)}");
                     }
                 }
 
-                #endregion
+                //其他检查
+                await PreSignInCheckAsync(user).ConfigureAwait(false);
 
-                #region Pre Sign Check 
-
-                SignInResult result = await PreSignInCheckAsync(user).ConfigureAwait(false);
-
-                if (!result.IsSucceeded())
-                {
-                    return result;
-                }
-
-                #endregion
-
-                #region Logoff App Client
-
+                //注销其他客户端
                 DeviceType clientType = DeviceTypeChecker.Check(context.DeviceType);
 
                 if (clientType != DeviceType.Web && _signInOptions.AllowOnlyOneAppClient)
                 {
-                    SignInResult authorizationResult = await _signInTokenBiz.DeleteAppClientTokenByUserGuidAsync(user.Guid, transactionContext).ConfigureAwait(false);
-
-                    if (!authorizationResult.IsSucceeded())
-                    {
-                        await database.RollbackAsync(transactionContext).ConfigureAwait(false);
-                        return SignInResult.LogoffOtherClientFailed();
-                    }
+                    await _signInTokenBiz.DeleteAppClientTokenByUserGuidAsync(user.Guid, transactionContext).ConfigureAwait(false);
                 }
 
-                #endregion
-
-                #region Create User Token
-
+                //创建Token
                 SignInToken userToken = await _signInTokenBiz.CreateAsync(
                     user.Guid,
                     context.DeviceId,
@@ -208,88 +130,75 @@ namespace HB.Component.Authorization
                     context.RememberMe ? _signInOptions.RefreshTokenLongExpireTimeSpan : _signInOptions.RefreshTokenShortExpireTimeSpan,
                     transactionContext).ConfigureAwait(false);
 
-                if (userToken == null)
+                await _database.CommitAsync(transactionContext).ConfigureAwait(false);
+
+                //构造 Jwt
+                SignInResult result = new SignInResult
                 {
-                    await database.RollbackAsync(transactionContext).ConfigureAwait(false);
-                    return SignInResult.AuthtokenCreatedFailed();
-                }
-
-                #endregion
-
-                #region Construct Jwt
-
-                result.AccessToken = await _jwtBuilder.BuildJwtAsync(user, userToken, context.SignToWhere).ConfigureAwait(false);
-                result.RefreshToken = userToken.RefreshToken;
-                result.NewUserCreated = newUserCreated;
-                result.CurrentUser = user;
-
-                await database.CommitAsync(transactionContext).ConfigureAwait(false);
+                    AccessToken = await _jwtBuilder.BuildJwtAsync(user, userToken, context.SignToWhere).ConfigureAwait(false),
+                    RefreshToken = userToken.RefreshToken,
+                    NewUserCreated = newUserCreated,
+                    CurrentUser = user
+                };
 
                 return result;
 
-                #endregion
             }
             catch (Exception ex)
             {
-                logger.LogCritical(ex, $"SignInContext:{JsonUtil.ToJson(context)}");
-                await database.RollbackAsync(transactionContext).ConfigureAwait(false);
-                return SignInResult.Throwed();
+                await _database.RollbackAsync(transactionContext).ConfigureAwait(false);
+                throw ex;
             }
         }
 
         //TODO: 做好详细的历史纪录，各个阶段都要打log。一有风吹草动，就立马删除SignInToken
-        public async Task<SignInResult> RefreshAccessTokenAsync(RefreshContext context)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns>新的AccessToken</returns>
+        public async Task<string> RefreshAccessTokenAsync(RefreshContext context)
         {
-            if (!context.IsValid())
-            {
-                return SignInResult.ArgumentError();
-            }
+            ThrowIf.NullOrNotValid(context, nameof(context));
 
-            #region 频率检查
+            //频率检查
 
             //解决并发涌入
 
             if (!(await _frequencyChecker.CheckAsync(nameof(RefreshAccessTokenAsync), context.DeviceId, _options.RefreshIntervalTimeSpan).ConfigureAwait(false)))
             {
-                return SignInResult.TooFrequent();
+                throw new AuthorizationException(AuthorizationError.TooFrequent, $"Context:{SerializeUtil.ToJson(context)}");
             }
 
-            #endregion
-
-            #region AccessToken, Claims 验证
+            //AccessToken, Claims 验证
 
             ClaimsPrincipal claimsPrincipal = ValidateTokenWithoutLifeCheck(context);
-
-            
 
             //TODO: 这里缺DeviceId验证
 
             if (claimsPrincipal == null)
             {
                 //TODO: Black concern SigninToken by RefreshToken
-                return SignInResult.InvalideAccessToken();
+                throw new AuthorizationException(AuthorizationError.InvalideAccessToken, $"Context: {SerializeUtil.ToJson(context)}");
             }
 
             if (claimsPrincipal.GetDeviceId() != context.DeviceId)
             {
-                return SignInResult.InvalideDeviceId();
+                throw new AuthorizationException(AuthorizationError.InvalideDeviceId, $"Context: {SerializeUtil.ToJson(context)}");
             }
 
             string userGuid = claimsPrincipal.GetUserGuid();
 
             if (string.IsNullOrEmpty(userGuid))
             {
-                logger.LogWarning($"Refresh token error. UserGuid should not empty. Context : {JsonUtil.ToJson(context)}");
-                return SignInResult.InvalideUserGuid();
+                throw new AuthorizationException(AuthorizationError.InvalideUserGuid, $"Context: {SerializeUtil.ToJson(context)}");
             }
 
-            #endregion
 
-            #region SignInToken 验证
-
+            //SignInToken 验证
             User user;
             SignInToken signInToken;
-            TransactionContext transactionContext = await database.BeginTransactionAsync<SignInToken>().ConfigureAwait(false);
+            TransactionContext transactionContext = await _database.BeginTransactionAsync<SignInToken>().ConfigureAwait(false);
 
             try
             {
@@ -303,91 +212,63 @@ namespace HB.Component.Authorization
 
                 if (signInToken == null || signInToken.Blacked)
                 {
-                    await database.RollbackAsync(transactionContext).ConfigureAwait(false);
-                    logger.LogWarning("Refresh token error. signInToken not saved in db. Context : {0}", JsonUtil.ToJson(context));
-                    return SignInResult.NoTokenInStore();
+                    await _database.RollbackAsync(transactionContext).ConfigureAwait(false);
+
+                    throw new AuthorizationException(AuthorizationError.NoTokenInStore, $"Refresh token error. signInToken not saved in db. Context : {SerializeUtil.ToJson(context)}");
                 }
 
-                #endregion
-
-                #region User 信息变动验证
+                // User 信息变动验证
 
                 user = await _identityService.ValidateSecurityStampAsync(userGuid, claimsPrincipal.GetUserSecurityStamp()).ConfigureAwait(false);
 
                 if (user == null)
                 {
-                    await database.RollbackAsync(transactionContext).ConfigureAwait(false);
+                    await _database.RollbackAsync(transactionContext).ConfigureAwait(false);
 
                     await BlackSignInTokenAsync(signInToken).ConfigureAwait(false);
 
-                    logger.LogWarning("Refresh token error. User SecurityStamp Changed. Context : {0}", JsonUtil.ToJson(context));
-
-                    return SignInResult.UserSecurityStampChanged();
+                    throw new AuthorizationException(AuthorizationError.UserSecurityStampChanged, $"Refresh token error. User SecurityStamp Changed. Context : {SerializeUtil.ToJson(context)}");
                 }
 
-                #endregion
-
-                #region 更新SignInToken
-
+                // 更新SignInToken
                 signInToken.RefreshCount++;
 
-                SignInResult authorizationServerResult = await _signInTokenBiz.UpdateAsync(signInToken, transactionContext).ConfigureAwait(false);
+                await _signInTokenBiz.UpdateAsync(signInToken, transactionContext).ConfigureAwait(false);
 
-                if (!authorizationServerResult.IsSucceeded())
-                {
-                    await database.RollbackAsync(transactionContext).ConfigureAwait(false);
-
-                    logger.LogError("Refresh token error. Update SignIn Error. Context : {0}", JsonUtil.ToJson(context));
-                    return SignInResult.UpdateSignInTokenError();
-                }
-
-                #endregion
-
-                await database.CommitAsync(transactionContext).ConfigureAwait(false);
+                await _database.CommitAsync(transactionContext).ConfigureAwait(false);
 
             }
             catch (Exception ex)
             {
-                await database.RollbackAsync(transactionContext).ConfigureAwait(false);
-                logger.LogCritical(ex, $"RefreshContext:{JsonUtil.ToJson(context)}");
-
-                return SignInResult.Throwed();
+                await _database.RollbackAsync(transactionContext).ConfigureAwait(false);
+                throw ex;
             }
 
-            #region 发布新的AccessToken
+            // 发布新的AccessToken
 
-            SignInResult result = SignInResult.Succeeded();
-
-            result.AccessToken = await _jwtBuilder.BuildJwtAsync(user, signInToken, claimsPrincipal.GetAudience()).ConfigureAwait(false);
-
-            return result;
-
-            #endregion
+            return await _jwtBuilder.BuildJwtAsync(user, signInToken, claimsPrincipal.GetAudience());
         }
 
-        private async Task<SignInResult> PreSignInCheckAsync(User user)
+        private async Task PreSignInCheckAsync(User user)
         {
-            if (user == null)
-            {
-                return SignInResult.NoSuchUser();
-            }
+            ThrowIf.Null(user, nameof(user));
 
             //2, 手机验证
             if (_signInOptions.RequireMobileConfirmed && !user.MobileConfirmed)
             {
-                return SignInResult.MobileNotConfirmed();
+                throw new AuthorizationException(AuthorizationError.MobileNotConfirmed, $"user:{SerializeUtil.ToJson(user)}");
             }
 
             //3, 邮件验证
             if (_signInOptions.RequireEmailConfirmed && !user.EmailConfirmed)
             {
-                return SignInResult.EmailNotConfirmed();
+                throw new AuthorizationException(AuthorizationError.EmailNotConfirmed, $"user:{SerializeUtil.ToJson(user)}");
             }
 
             //4, Lockout 检查
             if (_signInOptions.RequiredLockoutCheck && user.LockoutEnabled && user.LockoutEndDate > DateTimeOffset.UtcNow)
             {
-                return SignInResult.LockedOut();
+                throw new AuthorizationException(AuthorizationError.LockedOut, $"user:{SerializeUtil.ToJson(user)}");
             }
 
             //5, 一天内,最大失败数检测
@@ -397,7 +278,7 @@ namespace HB.Component.Authorization
                 {
                     if (user.AccessFailedCount > _signInOptions.MaxFailedCount)
                     {
-                        return SignInResult.OverMaxFailedCount();
+                        throw new AuthorizationException(AuthorizationError.OverMaxFailedCount, $"user:{SerializeUtil.ToJson(user)}");
                     }
                 }
             }
@@ -416,8 +297,6 @@ namespace HB.Component.Authorization
             {
                 //TODO: 后续加上twofactor验证. 即登录后,再验证手机或者邮箱
             }
-
-            return SignInResult.Succeeded();
         }
 
         private static bool PassowrdCheck(User user, string password)
@@ -428,28 +307,17 @@ namespace HB.Component.Authorization
 
         private async Task OnPasswordCheckFailedAsync(User user)
         {
-            IdentityResult identityResult;
-
             if (_signInOptions.RequiredMaxFailedCountCheck)
             {
-                identityResult = await _identityService.SetAccessFailedCountAsync(user.Guid, user.AccessFailedCount + 1).ConfigureAwait(false);
+                await _identityService.SetAccessFailedCountAsync(user.Guid, user.AccessFailedCount + 1).ConfigureAwait(false);
 
-                if (!identityResult.IsSucceeded())
-                {
-                    logger.LogCritical($"OnPasswordCheckFailedAsync Failed at SetAccessFailedCountAsync, UserGuid:{user.Guid}");
-                }
             }
 
             if (_signInOptions.RequiredLockoutCheck)
             {
                 if (user.AccessFailedCount + 1 > _signInOptions.LockoutAfterAccessFailedCount)
                 {
-                    identityResult = await _identityService.SetLockoutAsync(user.Guid, true, _signInOptions.LockoutTimeSpan).ConfigureAwait(false);
-
-                    if (!identityResult.IsSucceeded())
-                    {
-                        logger.LogCritical($"OnPasswordCheckFailedAsync Failed at SetLockoutAsync, UserGuid:{user.Guid}");
-                    }
+                    await _identityService.SetLockoutAsync(user.Guid, true, _signInOptions.LockoutTimeSpan).ConfigureAwait(false);
                 }
             }
         }
@@ -457,23 +325,18 @@ namespace HB.Component.Authorization
         private async Task BlackSignInTokenAsync(SignInToken signInToken)
         {
             //TODO: 详细记录Black SiginInToken 的历史纪录
-            TransactionContext transactionContext = await database.BeginTransactionAsync<SignInToken>().ConfigureAwait(false);
+            TransactionContext transactionContext = await _database.BeginTransactionAsync<SignInToken>().ConfigureAwait(false);
             try
             {
-                SignInResult result = await _signInTokenBiz.DeleteAsync(signInToken.Guid, transactionContext).ConfigureAwait(false);
+                await _signInTokenBiz.DeleteAsync(signInToken.Guid, transactionContext).ConfigureAwait(false);
 
-                if (!result.IsSucceeded())
-                {
-                    await database.RollbackAsync(transactionContext).ConfigureAwait(false);
-                    logger.LogCritical($"SignInToken delete failure. Identifier:{signInToken.Guid}");
-                }
-
-                await database.CommitAsync(transactionContext).ConfigureAwait(false);
+                await _database.CommitAsync(transactionContext).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                await database.RollbackAsync(transactionContext).ConfigureAwait(false);
-                logger.LogCritical(ex, $"SignInToken : {JsonUtil.ToJson(signInToken)}");
+                await _database.RollbackAsync(transactionContext).ConfigureAwait(false);
+
+                throw ex;
             }
         }
 
@@ -481,7 +344,8 @@ namespace HB.Component.Authorization
         {
             try
             {
-                TokenValidationParameters parameters = new TokenValidationParameters {
+                TokenValidationParameters parameters = new TokenValidationParameters
+                {
                     ValidateAudience = false,
                     ValidateLifetime = false,
                     ValidIssuer = _options.OpenIdConnectConfiguration.Issuer,
@@ -490,16 +354,12 @@ namespace HB.Component.Authorization
 
                 return new JwtSecurityTokenHandler().ValidateToken(context.AccessToken, parameters, out SecurityToken validatedToken);
             }
-            catch (Exception ex)
+            catch
             {
-                logger.LogWarning(ex, "wrong token to refren.Context : {0}", JsonUtil.ToJson(context));
                 return null;
             }
         }
 
-        public JsonWebKeySet GetJsonWebKeySet()
-        {
-            return _credentialBiz.GetJsonWebKeySet();
-        }
+
     }
 }
