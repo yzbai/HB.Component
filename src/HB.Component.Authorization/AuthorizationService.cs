@@ -212,7 +212,7 @@ namespace HB.Component.Authorization
 
                 if (signInToken == null || signInToken.Blacked)
                 {
-                    await _database.RollbackAsync(transactionContext).ConfigureAwait(false);
+                    //await _database.RollbackAsync(transactionContext).ConfigureAwait(false);
 
                     throw new AuthorizationException(AuthorizationError.NoTokenInStore, $"Refresh token error. signInToken not saved in db. Context : {SerializeUtil.ToJson(context)}");
                 }
@@ -249,7 +249,7 @@ namespace HB.Component.Authorization
             return await _jwtBuilder.BuildJwtAsync(user, signInToken, claimsPrincipal.GetAudience());
         }
 
-        private async Task PreSignInCheckAsync(User user)
+        private Task PreSignInCheckAsync(User user)
         {
             ThrowIf.Null(user, nameof(user));
 
@@ -282,21 +282,15 @@ namespace HB.Component.Authorization
                     }
                 }
             }
-
-            if (_signInOptions.RequiredLockoutCheck)
-            {
-                await _identityService.SetLockoutAsync(user.Guid, false).ConfigureAwait(false);
-            }
-
-            if (_signInOptions.RequiredMaxFailedCountCheck)
-            {
-                await _identityService.SetAccessFailedCountAsync(user.Guid, 0).ConfigureAwait(false);
-            }
+            Task setLockTask = _signInOptions.RequiredLockoutCheck ? _identityService.SetLockoutAsync(user.Guid, false) : Task.CompletedTask;
+            Task setAccessFailedCountTask = _signInOptions.RequiredMaxFailedCountCheck ? _identityService.SetAccessFailedCountAsync(user.Guid, 0) : Task.CompletedTask;
 
             if (_signInOptions.RequireTwoFactorCheck && user.TwoFactorEnabled)
             {
                 //TODO: 后续加上twofactor验证. 即登录后,再验证手机或者邮箱
             }
+
+            return Task.WhenAll(setLockTask, setAccessFailedCountTask);
         }
 
         private static bool PassowrdCheck(User user, string password)
