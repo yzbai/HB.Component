@@ -74,25 +74,25 @@ namespace HB.Component.Authorization
             await _db.BatchDeleteAsync(resultList, transContext).ConfigureAwait(false);
         }
 
-        public async Task<SignInToken> GetAsync(string signInTokenGuid, string refreshToken, string deviceId, string userGuid, TransactionContext transContext = null)
+        public Task<SignInToken> GetAsync(string signInTokenGuid, string refreshToken, string deviceId, string userGuid, TransactionContext transContext = null)
         {
             if (signInTokenGuid.IsNullOrEmpty() || refreshToken.IsNullOrEmpty() || userGuid.IsNullOrEmpty())
             {
                 return null;
             }
 
-            return await _db.ScalarAsync<SignInToken>(s =>
+            return _db.ScalarAsync<SignInToken>(s =>
                 s.UserGuid == userGuid &&
                 s.Guid == signInTokenGuid &&
                 s.RefreshToken == refreshToken &&
-                s.DeviceId == deviceId, transContext).ConfigureAwait(false);
+                s.DeviceId == deviceId, transContext);
         }
 
-        public async Task UpdateAsync(SignInToken signInToken, TransactionContext transContext = null)
+        public Task UpdateAsync(SignInToken signInToken, TransactionContext transContext = null)
         {
             ThrowIf.Null(signInToken, nameof(signInToken));
 
-            await _db.UpdateAsync(signInToken, transContext).ConfigureAwait(false);
+            return _db.UpdateAsync(signInToken, transContext);
         }
     }
 }

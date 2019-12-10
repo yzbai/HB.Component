@@ -299,21 +299,26 @@ namespace HB.Component.Authorization
             return passwordHash.Equals(user.PasswordHash, GlobalSettings.Comparison);
         }
 
-        private async Task OnPasswordCheckFailedAsync(User user)
+        private Task OnPasswordCheckFailedAsync(User user)
         {
+            Task setAccessFailedCountTask = Task.CompletedTask;
+
             if (_signInOptions.RequiredMaxFailedCountCheck)
             {
-                await _identityService.SetAccessFailedCountAsync(user.Guid, user.AccessFailedCount + 1).ConfigureAwait(false);
-
+                setAccessFailedCountTask = _identityService.SetAccessFailedCountAsync(user.Guid, user.AccessFailedCount + 1);
             }
+
+            Task setLockoutTask = Task.CompletedTask;
 
             if (_signInOptions.RequiredLockoutCheck)
             {
                 if (user.AccessFailedCount + 1 > _signInOptions.LockoutAfterAccessFailedCount)
                 {
-                    await _identityService.SetLockoutAsync(user.Guid, true, _signInOptions.LockoutTimeSpan).ConfigureAwait(false);
+                    setLockoutTask = _identityService.SetLockoutAsync(user.Guid, true, _signInOptions.LockoutTimeSpan);
                 }
             }
+
+            return Task.WhenAll(setAccessFailedCountTask, setLockoutTask);
         }
 
         private async Task BlackSignInTokenAsync(SignInToken signInToken)
