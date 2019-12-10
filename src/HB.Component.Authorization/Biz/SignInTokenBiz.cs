@@ -49,7 +49,7 @@ namespace HB.Component.Authorization
                 .Where(at => at.DeviceType != Enum.GetName(typeof(DeviceType), DeviceType.Web))
                 .And(at => at.UserGuid == userGuid);
 
-            IList<SignInToken> resultList = await _db.RetrieveAsync(where, transContext).ConfigureAwait(false);
+            IEnumerable<SignInToken> resultList = await _db.RetrieveAsync(where, transContext).ConfigureAwait(false);
 
             await _db.BatchDeleteAsync(resultList, transContext).ConfigureAwait(false);
         }
@@ -59,7 +59,7 @@ namespace HB.Component.Authorization
             ThrowIf.NullOrEmpty(userGuid, nameof(userGuid));
             ThrowIf.Null(transContext, nameof(transContext));
 
-            IList<SignInToken> resultList = await _db.RetrieveAsync<SignInToken>(at => at.UserGuid == userGuid, transContext).ConfigureAwait(false);
+            IEnumerable<SignInToken> resultList = await _db.RetrieveAsync<SignInToken>(at => at.UserGuid == userGuid, transContext).ConfigureAwait(false);
 
             await _db.BatchDeleteAsync(resultList, transContext).ConfigureAwait(false);
         }
@@ -69,7 +69,7 @@ namespace HB.Component.Authorization
             ThrowIf.NullOrEmpty(signInTokenGuid, nameof(signInTokenGuid));
             ThrowIf.Null(transContext, nameof(transContext));
 
-            IList<SignInToken> resultList = await _db.RetrieveAsync<SignInToken>(at => at.Guid == signInTokenGuid, transContext).ConfigureAwait(false);
+            IEnumerable<SignInToken> resultList = await _db.RetrieveAsync<SignInToken>(at => at.Guid == signInTokenGuid, transContext).ConfigureAwait(false);
 
             await _db.BatchDeleteAsync(resultList, transContext).ConfigureAwait(false);
         }

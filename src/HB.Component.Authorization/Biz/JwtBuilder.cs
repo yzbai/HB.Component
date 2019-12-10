@@ -5,6 +5,7 @@ using HB.Component.Identity.Entity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -32,7 +33,9 @@ namespace HB.Component.Authorization
         {
             DateTime utcNow = DateTime.UtcNow;
 
-            IList<Claim> claims = await _identityService.GetUserClaimAsync(user).ConfigureAwait(false);
+            IEnumerable<Claim> userClaims = await _identityService.GetUserClaimAsync(user).ConfigureAwait(false);
+            
+            IList<Claim> claims = userClaims.ToList();
 
             claims.Add(new Claim(ClaimExtensionTypes.SignInTokenGuid, signInToken.Guid));
 

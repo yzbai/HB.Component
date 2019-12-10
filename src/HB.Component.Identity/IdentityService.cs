@@ -95,12 +95,12 @@ namespace HB.Component.Identity
             return _userBiz.ValidateSecurityStampAsync(userGuid, securityStamp);
         }
 
-        public async Task<IList<Claim>> GetUserClaimAsync(User user)
+        public async Task<IEnumerable<Claim>> GetUserClaimAsync(User user)
         {
             TransactionContext transactionContext = await _database.BeginTransactionAsync<User>().ConfigureAwait(false);
             try
             {
-                IList<Claim> claims = await _claimsFactory.CreateClaimsAsync(user, transactionContext).ConfigureAwait(false);
+                IEnumerable<Claim> claims = await _claimsFactory.CreateClaimsAsync(user, transactionContext).ConfigureAwait(false);
 
                 await _database.CommitAsync(transactionContext).ConfigureAwait(false);
 

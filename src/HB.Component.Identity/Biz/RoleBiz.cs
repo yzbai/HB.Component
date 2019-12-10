@@ -17,12 +17,9 @@ namespace HB.Component.Identity
             _database = database;
         }
 
-        public Task<IList<Role>> GetByUserGuidAsync(string userGuid, TransactionContext transContext = null)
+        public Task<IEnumerable<Role>> GetByUserGuidAsync(string userGuid, TransactionContext transContext = null)
         {
-            if (userGuid.IsNullOrEmpty())
-            {
-                return TaskUtil.FromList<Role>();
-            }
+            ThrowIf.NullOrEmpty(userGuid, nameof(userGuid));
 
             FromExpression<Role> from = _database.From<Role>().RightJoin<UserRole>((r, ru) => r.Guid == ru.RoleGuid);
             WhereExpression<Role> where = _database.Where<Role>().And<UserRole>(ru => ru.UserGuid == userGuid);

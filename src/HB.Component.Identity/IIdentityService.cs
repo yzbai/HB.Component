@@ -15,6 +15,6 @@ namespace HB.Component.Identity
         Task<User> CreateUserByMobileAsync(string userType, string mobile, string userName, string password, bool mobileConfirmed);
         Task SetLockoutAsync(string userGuid, bool lockout, TimeSpan? lockoutTimeSpan = null);
         Task SetAccessFailedCountAsync(string userGuid, long count);
-        Task<IList<Claim>> GetUserClaimAsync(User user);
+        Task<IEnumerable<Claim>> GetUserClaimAsync(User user);
     }
 }

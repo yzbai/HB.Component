@@ -23,7 +23,7 @@ namespace HB.Component.Identity.Abstractions
         //bool IsUserInRole(int userId, string roleName);
         //ErrCode SetUserRoles(int userId, string[] roleNames, string lastUser);
         //ErrCode UpdateRole(Role role, string lastUser);
-        Task<IList<Role>> GetByUserGuidAsync(string userGuid, TransactionContext transContext = null);
+        Task<IEnumerable<Role>> GetByUserGuidAsync(string userGuid, TransactionContext transContext = null);
 
     }
 }

@@ -66,7 +66,7 @@ namespace HB.Component.Identity
             return _db.ScalarAsync<User>(u => u.Email.Equals(email, GlobalSettings.ComparisonIgnoreCase), transContext);
         }
 
-        public Task<IList<User>> GetAsync(IEnumerable<string> userGuids, TransactionContext transContext = null)
+        public Task<IEnumerable<User>> GetAsync(IEnumerable<string> userGuids, TransactionContext transContext = null)
         {
             ThrowIf.AnyNull(userGuids, nameof(userGuids));
 
