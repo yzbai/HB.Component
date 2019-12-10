@@ -30,12 +30,12 @@ namespace HB.Component.Identity
 
         #region Retrieve
 
-        public async Task<User> ValidateSecurityStampAsync(string userGuid, string securityStamp, TransactionContext transContext = null)
+        public Task<User> ValidateSecurityStampAsync(string userGuid, string securityStamp, TransactionContext transContext = null)
         {
             ThrowIf.NullOrEmpty(userGuid, nameof(userGuid));
             ThrowIf.NullOrEmpty(securityStamp, nameof(securityStamp));
 
-            return await _db.ScalarAsync<User>(u => u.Guid == userGuid && u.SecurityStamp == securityStamp, transContext).ConfigureAwait(false);
+            return _db.ScalarAsync<User>(u => u.Guid == userGuid && u.SecurityStamp == securityStamp, transContext);
         }
 
         public Task<User> GetAsync(string userGuid, TransactionContext transContext = null)
@@ -163,7 +163,7 @@ namespace HB.Component.Identity
             await _db.UpdateAsync(user, transContext).ConfigureAwait(false);
         }
 
-        private async Task ChangeSecurityStampAsync(User user)
+        private Task ChangeSecurityStampAsync(User user)
         {
             ThrowIf.Null(user, nameof(user));
 
@@ -172,8 +172,10 @@ namespace HB.Component.Identity
             if (_identityOptions.Events != null)
             {
                 IdentitySecurityStampChangeContext context = new IdentitySecurityStampChangeContext(user.Guid);
-                await _identityOptions.Events.SecurityStampChanged(context).ConfigureAwait(false);
+                return _identityOptions.Events.SecurityStampChanged(context);
             }
+
+            return Task.CompletedTask;
         }
 
         #endregion
