@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using HB.Component.Identity.Abstractions;
 using HB.Component.Identity.Entity;
+using System;
 
 namespace HB.Component.Identity
 {
@@ -16,12 +17,9 @@ namespace HB.Component.Identity
             _db = database;
         }
 
-        public Task<IList<UserClaim>> GetAsync(string userGuid, TransactionContext transContext = null)
+        public Task<IEnumerable<UserClaim>> GetAsync(string userGuid, TransactionContext transContext = null)
         {
-            if (userGuid.IsNullOrEmpty())
-            {
-                return Task.FromResult((IList<UserClaim>)new List<UserClaim>());
-            }
+            ThrowIf.NullOrEmpty(userGuid, nameof(userGuid));
 
             return _db.RetrieveAsync<UserClaim>(uc => uc.UserGuid == userGuid, transContext);
         }

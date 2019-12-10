@@ -26,7 +26,7 @@ namespace HB.Component.Identity
         /// <param name="user"></param>
         /// <param name="transContext"></param>
         /// <returns></returns>
-        public async Task<IList<Claim>> CreateClaimsAsync(User user, TransactionContext transContext)
+        public Task<IEnumerable<Claim>> CreateClaimsAsync(User user, TransactionContext transContext)
         {
             ThrowIf.Null(transContext, nameof(transContext));
 
@@ -42,24 +42,29 @@ namespace HB.Component.Identity
                 //new Claim(ClaimExtensionTypes.IsMobileConfirmed, user.MobileConfirmed.ToString(GlobalSettings.Culture))
             };
 
-            IList<UserClaim> userClaims = await _userClaimBiz.GetAsync(user.Guid, transContext).ConfigureAwait(false);
+            //并行
 
-            foreach (UserClaim item in userClaims)
-            {
-                if (item.AddToJwt)
+            return TaskUtil.Concurrence(_userClaimBiz.GetAsync(user.Guid, transContext), _roleBiz.GetByUserGuidAsync(user.Guid, transContext),
+                userClaims =>
                 {
-                    claims.Add(new Claim(item.ClaimType, item.ClaimValue));
-                }
-            }
+                    List<Claim> rts = new List<Claim>();
+                    userClaims.ForEach((item) =>
+                    {
+                        if (item.AddToJwt)
+                        {
+                            rts.Add(new Claim(item.ClaimType, item.ClaimValue));
+                        }
+                    });
+                    return rts;
+                },
+                roles =>
+                {
+                    List<Claim> rts = new List<Claim>();
 
-            IList<Role> roles = await _roleBiz.GetByUserGuidAsync(user.Guid, transContext).ConfigureAwait(false);
+                    roles.Select(r => r.Name).ForEach(roleName => rts.Add(new Claim(ClaimExtensionTypes.Role, roleName)));
 
-            foreach (string roleName in roles.Select(r => r.Name))
-            {
-                claims.Add(new Claim(ClaimExtensionTypes.Role, roleName));
-            }
-
-            return claims;
+                    return rts;
+                });
         }
     }
 }
