@@ -17,14 +17,16 @@ namespace HB.Component.Identity
             _database = database;
         }
 
-        public Task<IEnumerable<Role>> GetByUserGuidAsync(string userGuid, TransactionContext transContext = null)
+        public Task<IEnumerable<TRole>> GetByUserGuidAsync<TRole, TUserRole>(string userGuid, TransactionContext transContext = null) 
+            where TRole : Role, new() 
+            where TUserRole : UserRole, new()
         {
             ThrowIf.NullOrEmpty(userGuid, nameof(userGuid));
 
-            FromExpression<Role> from = _database.From<Role>().RightJoin<UserRole>((r, ru) => r.Guid == ru.RoleGuid);
-            WhereExpression<Role> where = _database.Where<Role>().And<UserRole>(ru => ru.UserGuid == userGuid);
+            FromExpression<TRole> from = _database.From<TRole>().RightJoin<TUserRole>((r, ru) => r.Guid == ru.RoleGuid);
+            WhereExpression<TRole> where = _database.Where<TRole>().And<UserRole>(ru => ru.UserGuid == userGuid);
 
-            return _database.RetrieveAsync<Role>(from, where, transContext);
+            return _database.RetrieveAsync(from, where, transContext);
         }
     }
 }

@@ -26,7 +26,10 @@ namespace HB.Component.Identity
         /// <param name="user"></param>
         /// <param name="transContext"></param>
         /// <returns></returns>
-        public Task<IEnumerable<Claim>> CreateClaimsAsync(User user, TransactionContext transContext)
+        public Task<IEnumerable<Claim>> CreateClaimsAsync<TUserClaim, TRole, TUserRole>(User user, TransactionContext transContext) 
+            where TUserClaim : UserClaim, new()
+            where TRole : Role, new()
+            where TUserRole : UserRole, new()
         {
             ThrowIf.Null(transContext, nameof(transContext));
 
@@ -44,7 +47,7 @@ namespace HB.Component.Identity
 
             //并行
 
-            return TaskUtil.Concurrence(_userClaimBiz.GetAsync(user.Guid, transContext), _roleBiz.GetByUserGuidAsync(user.Guid, transContext),
+            return TaskUtil.Concurrence(_userClaimBiz.GetAsync<TUserClaim>(user.Guid, transContext), _roleBiz.GetByUserGuidAsync<TRole, TUserRole>(user.Guid, transContext),
                 userClaims =>
                 {
                     List<Claim> rts = new List<Claim>();
