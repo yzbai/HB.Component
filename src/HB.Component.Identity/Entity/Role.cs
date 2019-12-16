@@ -7,7 +7,7 @@ namespace HB.Component.Identity.Entity
     /// <summary>
     /// ½ÇÉ«
     /// </summary>
-    public class Role : DatabaseEntity
+    public abstract class Role : DatabaseEntity
     {
         [UniqueGuidEntityProperty]
         public string Guid { get; set; }

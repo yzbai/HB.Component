@@ -25,12 +25,12 @@ namespace HB.Component.Identity
             _claimsFactory = claimsFactory;
         }
 
-        public async Task<User> CreateUserByMobileAsync(string userType, string mobile, string userName, string password, bool mobileConfirmed)
+        public async Task<TUser> CreateUserByMobileAsync<TUser>(string userType, string mobile, string userName, string password, bool mobileConfirmed) where TUser : User, new()
         {
-            TransactionContext transactionContext = await _database.BeginTransactionAsync<User>().ConfigureAwait(false);
+            TransactionContext transactionContext = await _database.BeginTransactionAsync<TUser>().ConfigureAwait(false);
             try
             {
-                User user = await _userBiz.CreateByMobileAsync(userType, mobile, userName, password, mobileConfirmed, transactionContext).ConfigureAwait(false);
+                TUser user = await _userBiz.CreateByMobileAsync<TUser>(userType, mobile, userName, password, mobileConfirmed, transactionContext).ConfigureAwait(false);
 
                 await _database.CommitAsync(transactionContext).ConfigureAwait(false);
 
@@ -47,22 +47,22 @@ namespace HB.Component.Identity
             }
         }
 
-        public Task<User> GetUserByMobileAsync(string mobile)
+        public Task<TUser> GetUserByMobileAsync<TUser>(string mobile) where TUser : User, new()
         {
-            return _userBiz.GetByMobileAsync(mobile);
+            return _userBiz.GetByMobileAsync<TUser>(mobile);
         }
 
-        public Task<User> GetUserByUserNameAsync(string userName)
+        public Task<TUser> GetUserByUserNameAsync<TUser>(string userName) where TUser : User, new()
         {
-            return _userBiz.GetByUserNameAsync(userName);
+            return _userBiz.GetByUserNameAsync<TUser>(userName);
         }
 
-        public async Task SetAccessFailedCountAsync(string userGuid, long count)
+        public async Task SetAccessFailedCountAsync<TUser>(string userGuid, long count) where TUser : User, new()
         {
-            TransactionContext transactionContext = await _database.BeginTransactionAsync<User>().ConfigureAwait(false);
+            TransactionContext transactionContext = await _database.BeginTransactionAsync<TUser>().ConfigureAwait(false);
             try
             {
-                await _userBiz.SetAccessFailedCountAsync(userGuid, count, transactionContext).ConfigureAwait(false);
+                await _userBiz.SetAccessFailedCountAsync<TUser>(userGuid, count, transactionContext).ConfigureAwait(false);
 
                 await _database.CommitAsync(transactionContext).ConfigureAwait(false);
             }
@@ -73,13 +73,13 @@ namespace HB.Component.Identity
             }
         }
 
-        public async Task SetLockoutAsync(string userGuid, bool lockout, TimeSpan? lockoutTimeSpan = null)
+        public async Task SetLockoutAsync<TUser>(string userGuid, bool lockout, TimeSpan? lockoutTimeSpan = null) where TUser : User, new()
         {
-            TransactionContext transactionContext = await _database.BeginTransactionAsync<User>().ConfigureAwait(false);
+            TransactionContext transactionContext = await _database.BeginTransactionAsync<TUser>().ConfigureAwait(false);
 
             try
             {
-                await _userBiz.SetLockoutAsync(userGuid, lockout, transactionContext, lockoutTimeSpan).ConfigureAwait(false);
+                await _userBiz.SetLockoutAsync<TUser>(userGuid, lockout, transactionContext, lockoutTimeSpan).ConfigureAwait(false);
 
                 await _database.CommitAsync(transactionContext).ConfigureAwait(false);
             }
@@ -90,17 +90,21 @@ namespace HB.Component.Identity
             }
         }
 
-        public Task<User> ValidateSecurityStampAsync(string userGuid, string securityStamp)
+        public Task<TUser> ValidateSecurityStampAsync<TUser>(string userGuid, string securityStamp) where TUser : User, new()
         {
-            return _userBiz.ValidateSecurityStampAsync(userGuid, securityStamp);
+            return _userBiz.ValidateSecurityStampAsync<TUser>(userGuid, securityStamp);
         }
 
-        public async Task<IEnumerable<Claim>> GetUserClaimAsync(User user)
+        public async Task<IEnumerable<Claim>> GetUserClaimAsync<TUser, TUserClaim, TRole, TUserRole>(TUser user)
+            where TUser : User, new()
+            where TUserClaim : UserClaim, new()
+            where TRole : Role, new()
+            where TUserRole: UserRole, new()
         {
             TransactionContext transactionContext = await _database.BeginTransactionAsync<User>().ConfigureAwait(false);
             try
             {
-                IEnumerable<Claim> claims = await _claimsFactory.CreateClaimsAsync(user, transactionContext).ConfigureAwait(false);
+                IEnumerable<Claim> claims = await _claimsFactory.CreateClaimsAsync<TUserClaim, TRole, TUserRole>(user, transactionContext).ConfigureAwait(false);
 
                 await _database.CommitAsync(transactionContext).ConfigureAwait(false);
 

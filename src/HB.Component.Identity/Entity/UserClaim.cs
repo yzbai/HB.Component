@@ -3,7 +3,7 @@ using System;
 
 namespace HB.Component.Identity.Entity
 {
-    public class UserClaim : DatabaseEntity
+    public abstract class UserClaim : DatabaseEntity
     {
         [UniqueGuidEntityProperty]
         public string Guid { get; set; }

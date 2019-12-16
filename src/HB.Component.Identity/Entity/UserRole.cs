@@ -6,7 +6,7 @@ namespace HB.Component.Identity.Entity
     /// <summary>
     /// 用户-角色 关系 实体
     /// </summary>
-    public class UserRole : DatabaseEntity
+    public abstract class UserRole : DatabaseEntity
     {
         [UniqueGuidEntityProperty]
         public string Guid { get; set; }
