@@ -25,12 +25,12 @@ namespace HB.Component.Identity
             _claimsFactory = claimsFactory;
         }
 
-        public async Task<TUser> CreateUserByMobileAsync<TUser>(string userType, string mobile, string userName, string password, bool mobileConfirmed) where TUser : User, new()
+        public async Task<TUser> CreateUserByMobileAsync<TUser>(string mobile, string userName, string password, bool mobileConfirmed) where TUser : User, new()
         {
             TransactionContext transactionContext = await _database.BeginTransactionAsync<TUser>().ConfigureAwait(false);
             try
             {
-                TUser user = await _userBiz.CreateByMobileAsync<TUser>(userType, mobile, userName, password, mobileConfirmed, transactionContext).ConfigureAwait(false);
+                TUser user = await _userBiz.CreateByMobileAsync<TUser>(mobile, userName, password, mobileConfirmed, transactionContext).ConfigureAwait(false);
 
                 await _database.CommitAsync(transactionContext).ConfigureAwait(false);
 
@@ -95,16 +95,15 @@ namespace HB.Component.Identity
             return _userBiz.ValidateSecurityStampAsync<TUser>(userGuid, securityStamp);
         }
 
-        public async Task<IEnumerable<Claim>> GetUserClaimAsync<TUser, TUserClaim, TRole, TUserRole>(TUser user)
-            where TUser : User, new()
+        public async Task<IEnumerable<Claim>> GetUserClaimAsync<TUserClaim, TRole, TRoleOfUser>(User user)
             where TUserClaim : UserClaim, new()
             where TRole : Role, new()
-            where TUserRole: UserRole, new()
+            where TRoleOfUser: RoleOfUser, new()
         {
-            TransactionContext transactionContext = await _database.BeginTransactionAsync<User>().ConfigureAwait(false);
+            TransactionContext transactionContext = await _database.BeginTransactionAsync<TUserClaim>().ConfigureAwait(false);
             try
             {
-                IEnumerable<Claim> claims = await _claimsFactory.CreateClaimsAsync<TUserClaim, TRole, TUserRole>(user, transactionContext).ConfigureAwait(false);
+                IEnumerable<Claim> claims = await _claimsFactory.CreateClaimsAsync<TUserClaim, TRole, TRoleOfUser>(user, transactionContext).ConfigureAwait(false);
 
                 await _database.CommitAsync(transactionContext).ConfigureAwait(false);
 

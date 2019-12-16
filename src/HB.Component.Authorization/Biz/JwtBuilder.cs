@@ -29,11 +29,14 @@ namespace HB.Component.Authorization
             _identityService = identityService;
         }
 
-        public async Task<string> BuildJwtAsync(User user, SignInToken signInToken, string audience)
+        public async Task<string> BuildJwtAsync<TUserClaim, TRole, TRoleOfUser>(User user, SignInToken signInToken, string audience)
+            where TUserClaim : UserClaim, new()
+            where TRole : Role, new()
+            where TRoleOfUser : RoleOfUser, new()
         {
             DateTime utcNow = DateTime.UtcNow;
 
-            IEnumerable<Claim> userClaims = await _identityService.GetUserClaimAsync(user).ConfigureAwait(false);
+            IEnumerable<Claim> userClaims = await _identityService.GetUserClaimAsync<TUserClaim, TRole, TRoleOfUser>(user).ConfigureAwait(false);
             
             IList<Claim> claims = userClaims.ToList();
 
