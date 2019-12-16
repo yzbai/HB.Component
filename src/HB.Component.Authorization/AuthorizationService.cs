@@ -65,7 +65,11 @@ namespace HB.Component.Authorization
             }
         }
 
-        public async Task<SignInResult> SignInAsync(SignInContext context)
+        public async Task<SignInResult> SignInAsync<TUser, TUserClaim, TRole, TRoleOfUser>(SignInContext context) 
+            where TUser : User, new()
+            where TUserClaim : UserClaim, new()
+            where TRole : Role, new()
+            where TRoleOfUser : RoleOfUser, new()
         {
             ThrowIf.NullOrNotValid(context, nameof(context));
 
@@ -74,11 +78,11 @@ namespace HB.Component.Authorization
             try
             {
                 //查询用户
-                User user = context.SignInType switch
+                TUser user = context.SignInType switch
                 {
-                    SignInType.ByUserNameAndPassword => await _identityService.GetUserByUserNameAsync(context.UserName).ConfigureAwait(false),
-                    SignInType.BySms => await _identityService.GetUserByMobileAsync(context.Mobile).ConfigureAwait(false),
-                    SignInType.ByMobileAndPassword => await _identityService.GetUserByMobileAsync(context.Mobile).ConfigureAwait(false),
+                    SignInType.ByUserNameAndPassword => await _identityService.GetUserByUserNameAsync<TUser>(context.UserName).ConfigureAwait(false),
+                    SignInType.BySms => await _identityService.GetUserByMobileAsync<TUser>(context.Mobile).ConfigureAwait(false),
+                    SignInType.ByMobileAndPassword => await _identityService.GetUserByMobileAsync<TUser>(context.Mobile).ConfigureAwait(false),
                     _ => null
                 };
 
@@ -87,7 +91,7 @@ namespace HB.Component.Authorization
 
                 if (user == null && context.SignInType == SignInType.BySms)
                 {
-                    user = await _identityService.CreateUserByMobileAsync(context.UserType, context.Mobile, context.UserName, context.Password, true).ConfigureAwait(false);
+                    user = await _identityService.CreateUserByMobileAsync<TUser>(context.Mobile, context.UserName, context.Password, true).ConfigureAwait(false);
 
                     newUserCreated = true;
                 }
@@ -135,7 +139,7 @@ namespace HB.Component.Authorization
                 //构造 Jwt
                 SignInResult result = new SignInResult
                 {
-                    AccessToken = await _jwtBuilder.BuildJwtAsync(user, userToken, context.SignToWhere).ConfigureAwait(false),
+                    AccessToken = await _jwtBuilder.BuildJwtAsync<TUserClaim, TRole, TRoleOfUser>(user, userToken, context.SignToWhere).ConfigureAwait(false),
                     RefreshToken = userToken.RefreshToken,
                     NewUserCreated = newUserCreated,
                     CurrentUser = user
@@ -157,7 +161,11 @@ namespace HB.Component.Authorization
         /// </summary>
         /// <param name="context"></param>
         /// <returns>新的AccessToken</returns>
-        public async Task<string> RefreshAccessTokenAsync(RefreshContext context)
+        public async Task<string> RefreshAccessTokenAsync<TUser, TUserClaim, TRole, TRoleOfUser>(RefreshContext context) 
+            where TUser : User, new()
+            where TUserClaim : UserClaim, new()
+            where TRole : Role, new()
+            where TRoleOfUser : RoleOfUser, new()
         {
             ThrowIf.NullOrNotValid(context, nameof(context));
 
@@ -196,7 +204,7 @@ namespace HB.Component.Authorization
 
 
             //SignInToken 验证
-            User user;
+            TUser user;
             SignInToken signInToken;
             TransactionContext transactionContext = await _database.BeginTransactionAsync<SignInToken>().ConfigureAwait(false);
 
@@ -219,7 +227,7 @@ namespace HB.Component.Authorization
 
                 // User 信息变动验证
 
-                user = await _identityService.ValidateSecurityStampAsync(userGuid, claimsPrincipal.GetUserSecurityStamp()).ConfigureAwait(false);
+                user = await _identityService.ValidateSecurityStampAsync<TUser>(userGuid, claimsPrincipal.GetUserSecurityStamp()).ConfigureAwait(false);
 
                 if (user == null)
                 {
@@ -246,10 +254,10 @@ namespace HB.Component.Authorization
 
             // 发布新的AccessToken
 
-            return await _jwtBuilder.BuildJwtAsync(user, signInToken, claimsPrincipal.GetAudience());
+            return await _jwtBuilder.BuildJwtAsync<TUserClaim, TRole, TRoleOfUser>(user, signInToken, claimsPrincipal.GetAudience());
         }
 
-        private Task PreSignInCheckAsync(User user)
+        private Task PreSignInCheckAsync<TUser>(TUser user) where TUser:User, new()
         {
             ThrowIf.Null(user, nameof(user));
 
@@ -282,8 +290,8 @@ namespace HB.Component.Authorization
                     }
                 }
             }
-            Task setLockTask = _signInOptions.RequiredLockoutCheck ? _identityService.SetLockoutAsync(user.Guid, false) : Task.CompletedTask;
-            Task setAccessFailedCountTask = _signInOptions.RequiredMaxFailedCountCheck ? _identityService.SetAccessFailedCountAsync(user.Guid, 0) : Task.CompletedTask;
+            Task setLockTask = _signInOptions.RequiredLockoutCheck ? _identityService.SetLockoutAsync<TUser>(user.Guid, false) : Task.CompletedTask;
+            Task setAccessFailedCountTask = _signInOptions.RequiredMaxFailedCountCheck ? _identityService.SetAccessFailedCountAsync<TUser>(user.Guid, 0) : Task.CompletedTask;
 
             if (_signInOptions.RequireTwoFactorCheck && user.TwoFactorEnabled)
             {
@@ -299,13 +307,13 @@ namespace HB.Component.Authorization
             return passwordHash.Equals(user.PasswordHash, GlobalSettings.Comparison);
         }
 
-        private Task OnPasswordCheckFailedAsync(User user)
+        private Task OnPasswordCheckFailedAsync<TUser>(TUser user) where TUser:User, new()
         {
             Task setAccessFailedCountTask = Task.CompletedTask;
 
             if (_signInOptions.RequiredMaxFailedCountCheck)
             {
-                setAccessFailedCountTask = _identityService.SetAccessFailedCountAsync(user.Guid, user.AccessFailedCount + 1);
+                setAccessFailedCountTask = _identityService.SetAccessFailedCountAsync<TUser>(user.Guid, user.AccessFailedCount + 1);
             }
 
             Task setLockoutTask = Task.CompletedTask;
@@ -314,7 +322,7 @@ namespace HB.Component.Authorization
             {
                 if (user.AccessFailedCount + 1 > _signInOptions.LockoutAfterAccessFailedCount)
                 {
-                    setLockoutTask = _identityService.SetLockoutAsync(user.Guid, true, _signInOptions.LockoutTimeSpan);
+                    setLockoutTask = _identityService.SetLockoutAsync<TUser>(user.Guid, true, _signInOptions.LockoutTimeSpan);
                 }
             }
 

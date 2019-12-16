@@ -9,7 +9,7 @@ namespace HB.Component.Identity.Abstractions
 {
     internal interface IUserBiz
     {
-        Task<TUser> CreateByMobileAsync<TUser>(string userType, string mobile, string userName, string password, bool mobileConfirmed, TransactionContext transContext) where TUser : User, new();
+        Task<TUser> CreateByMobileAsync<TUser>(string mobile, string userName, string password, bool mobileConfirmed, TransactionContext transContext) where TUser : User, new();
 
         Task<IEnumerable<TUser>> GetAsync<TUser>(IEnumerable<string> userGuids, TransactionContext transContext = null) where TUser : User, new();
         Task<TUser> GetAsync<TUser>(string userGuid, TransactionContext transContext = null) where TUser : User, new();

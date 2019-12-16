@@ -182,7 +182,7 @@ namespace HB.Component.Identity
 
         #region Register
 
-        private TUser InitNew<TUser>(string userType, string mobile, string userName, string password) where TUser : User, new()
+        private TUser InitNew<TUser>(string mobile, string userName, string password) where TUser : User, new()
         {
             TUser user = new TUser {
                 //UserType = userType,
@@ -201,10 +201,9 @@ namespace HB.Component.Identity
             return user;
         }
 
-        public async Task<TUser> CreateByMobileAsync<TUser>(string userType, string mobile, string userName, string password, bool mobileConfirmed, TransactionContext transContext) where TUser : User, new()
+        public async Task<TUser> CreateByMobileAsync<TUser>(string mobile, string userName, string password, bool mobileConfirmed, TransactionContext transContext) where TUser : User, new()
         {
             ThrowIf.Null(transContext, nameof(transContext));
-            ThrowIf.NullOrEmpty(userType, nameof(transContext));
             ThrowIf.NullOrNotMobile(mobile, nameof(mobile));
             ThrowIf.NullOrNotPassword(password, nameof(password));
 
@@ -214,7 +213,7 @@ namespace HB.Component.Identity
 
             if (user != null)
             {
-                throw new IdentityException(IdentityError.MobileAlreadyTaken, $"userType:{userType}, mobile:{mobile}, userName:{userName}");
+                throw new IdentityException(IdentityError.MobileAlreadyTaken, $"userType:{typeof(TUser)}, mobile:{mobile}, userName:{userName}");
             }
 
             if (!string.IsNullOrEmpty(userName))
@@ -223,13 +222,13 @@ namespace HB.Component.Identity
 
                 if (tmpUser != null)
                 {
-                    throw new IdentityException(IdentityError.UserNameAlreadyTaken, $"userType:{userType}, mobile:{mobile}, userName:{userName}");
+                    throw new IdentityException(IdentityError.UserNameAlreadyTaken, $"userType:{typeof(TUser)}, mobile:{mobile}, userName:{userName}");
                 }
             }
 
             #endregion
 
-            user = InitNew<TUser>(userType, mobile, userName, password);
+            user = InitNew<TUser>(mobile, userName, password);
             user.MobileConfirmed = mobileConfirmed;
 
             await _db.AddAsync(user, transContext).ConfigureAwait(false);

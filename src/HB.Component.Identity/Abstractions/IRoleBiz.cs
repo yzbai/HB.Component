@@ -21,9 +21,9 @@ namespace HB.Component.Identity.Abstractions
         //IList<Role> GetRoleByNames(string[] roleNames);
         //IList<Role> GetRoleByUserId(int userId);
         //bool IsUserInRole(int userId, string roleName);
-        //ErrCode SetUserRoles(int userId, string[] roleNames, string lastUser);
+        //ErrCode SeTRoleOfUsers(int userId, string[] roleNames, string lastUser);
         //ErrCode UpdateRole(Role role, string lastUser);
-        Task<IEnumerable<TRole>> GetByUserGuidAsync<TRole, TUserRole>(string userGuid, TransactionContext transContext = null) where TRole : Role, new() where TUserRole : UserRole, new();
+        Task<IEnumerable<TRole>> GetByUserGuidAsync<TRole, TRoleOfUser>(string userGuid, TransactionContext transContext = null) where TRole : Role, new() where TRoleOfUser : RoleOfUser, new();
 
     }
 }
