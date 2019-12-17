@@ -49,6 +49,12 @@ namespace HB.Component.Authorization
             return _credentialBiz.GetJsonWebKeySet();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="signInTokenGuid"></param>
+        /// <returns></returns>
+        /// <exception cref="DatabaseException"></exception>
         public async Task SignOutAsync(string signInTokenGuid)
         {
             TransactionContext transactionContext = await _database.BeginTransactionAsync<SignInToken>().ConfigureAwait(false);
@@ -161,6 +167,8 @@ namespace HB.Component.Authorization
         /// </summary>
         /// <param name="context"></param>
         /// <returns>新的AccessToken</returns>
+        /// <exception cref="AuthorizationException"></exception>
+        /// <exception cref="DatabaseException"></exception>
         public async Task<string> RefreshAccessTokenAsync<TUser, TUserClaim, TRole, TRoleOfUser>(RefreshContext context)
             where TUser : User, new()
             where TUserClaim : UserClaim, new()
@@ -364,8 +372,7 @@ namespace HB.Component.Authorization
                 ValidIssuer = _options.OpenIdConnectConfiguration.Issuer,
                 IssuerSigningKeys = _credentialBiz.GetIssuerSigningKeys()
             };
-
-            return new JwtSecurityTokenHandler().ValidateToken(context.AccessToken, parameters, out SecurityToken validatedToken);
+            return new JwtSecurityTokenHandler().ValidateToken(context.AccessToken, parameters, out _);
         }
     }
 }

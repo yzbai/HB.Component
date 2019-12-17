@@ -7,17 +7,30 @@ namespace HB.Component.Authorization
 {
     public interface IAuthorizationService
     {
+        /// <exception cref="AuthorizationException"></exception>
+        /// <exception cref="HB.Framework.Database.DatabaseException"></exception>
         Task<string> RefreshAccessTokenAsync<TUser, TUserClaim, TRole, TRoleOfUser>(RefreshContext context)
             where TUser : User, new()
             where TUserClaim : UserClaim, new()
             where TRole : Role, new()
             where TRoleOfUser : RoleOfUser, new();
+
+        /// <exception cref="AuthorizationException"></exception>
+        /// <exception cref="HB.Framework.Database.DatabaseException"></exception>
         Task<SignInResult> SignInAsync<TUser, TUserClaim, TRole, TRoleOfUser>(SignInContext context)
             where TUser : User, new()
             where TUserClaim : UserClaim, new()
             where TRole : Role, new()
             where TRoleOfUser : RoleOfUser, new();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="signInTokenGuid"></param>
+        /// <returns></returns>
+        /// <exception cref="HB.Framework.Database.DatabaseException"></exception>
         Task SignOutAsync(string signInTokenGuid);
+
         JsonWebKeySet GetJsonWebKeySet();
     }
 }

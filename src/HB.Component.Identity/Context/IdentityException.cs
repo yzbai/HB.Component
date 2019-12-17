@@ -35,5 +35,17 @@ namespace HB.Component.Identity
                 return _data;
             }
         }
+
+        public IdentityException()
+        {
+        }
+
+        public IdentityException(string message) : base(message)
+        {
+        }
+
+        public IdentityException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
     }
 }
