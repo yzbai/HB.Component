@@ -36,14 +36,14 @@ namespace HB.Component.Identity
 
                 return user;
             }
-            catch(Exception ex)
+            catch
             {
                 await _database.RollbackAsync(transactionContext).ConfigureAwait(false);
 
                 //TODO: 思考，这里需要记录吗，还是在调用者那里记录
                 //_logger.LogException(ex);
 
-                throw ex;
+                throw;
             }
         }
 
@@ -66,10 +66,10 @@ namespace HB.Component.Identity
 
                 await _database.CommitAsync(transactionContext).ConfigureAwait(false);
             }
-            catch(Exception ex)
+            catch
             {
                 await _database.RollbackAsync(transactionContext).ConfigureAwait(false);
-                throw ex;
+                throw;
             }
         }
 
@@ -83,10 +83,10 @@ namespace HB.Component.Identity
 
                 await _database.CommitAsync(transactionContext).ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch
             {
                 await _database.RollbackAsync(transactionContext).ConfigureAwait(false);
-                throw ex;
+                throw;
             }
         }
 
@@ -109,10 +109,10 @@ namespace HB.Component.Identity
 
                 return claims;
             }
-            catch (Exception ex)
+            catch
             {
                 await _database.RollbackAsync(transactionContext).ConfigureAwait(false);
-                throw ex;
+                throw;
             }
         }
     }
