@@ -58,14 +58,14 @@ namespace HB.Component.Authorization
 
                 await _database.CommitAsync(transactionContext).ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch
             {
                 await _database.RollbackAsync(transactionContext).ConfigureAwait(false);
-                throw ex;
+                throw;
             }
         }
 
-        public async Task<SignInResult> SignInAsync<TUser, TUserClaim, TRole, TRoleOfUser>(SignInContext context) 
+        public async Task<SignInResult> SignInAsync<TUser, TUserClaim, TRole, TRoleOfUser>(SignInContext context)
             where TUser : User, new()
             where TUserClaim : UserClaim, new()
             where TRole : Role, new()
@@ -148,10 +148,10 @@ namespace HB.Component.Authorization
                 return result;
 
             }
-            catch (Exception ex)
+            catch
             {
                 await _database.RollbackAsync(transactionContext).ConfigureAwait(false);
-                throw ex;
+                throw;
             }
         }
 
@@ -161,7 +161,7 @@ namespace HB.Component.Authorization
         /// </summary>
         /// <param name="context"></param>
         /// <returns>新的AccessToken</returns>
-        public async Task<string> RefreshAccessTokenAsync<TUser, TUserClaim, TRole, TRoleOfUser>(RefreshContext context) 
+        public async Task<string> RefreshAccessTokenAsync<TUser, TUserClaim, TRole, TRoleOfUser>(RefreshContext context)
             where TUser : User, new()
             where TUserClaim : UserClaim, new()
             where TRole : Role, new()
@@ -180,7 +180,15 @@ namespace HB.Component.Authorization
 
             //AccessToken, Claims 验证
 
-            ClaimsPrincipal claimsPrincipal = ValidateTokenWithoutLifeCheck(context);
+            ClaimsPrincipal claimsPrincipal = null;
+            try
+            {
+                claimsPrincipal = ValidateTokenWithoutLifeCheck(context);
+            }
+            catch(Exception ex)
+            {
+                throw new AuthorizationException(AuthorizationError.InvalideAccessToken, $"Context: {SerializeUtil.ToJson(context)}", ex);
+            }
 
             //TODO: 这里缺DeviceId验证
 
@@ -246,18 +254,18 @@ namespace HB.Component.Authorization
                 await _database.CommitAsync(transactionContext).ConfigureAwait(false);
 
             }
-            catch (Exception ex)
+            catch
             {
                 await _database.RollbackAsync(transactionContext).ConfigureAwait(false);
-                throw ex;
+                throw;
             }
 
             // 发布新的AccessToken
 
-            return await _jwtBuilder.BuildJwtAsync<TUserClaim, TRole, TRoleOfUser>(user, signInToken, claimsPrincipal.GetAudience());
+            return await _jwtBuilder.BuildJwtAsync<TUserClaim, TRole, TRoleOfUser>(user, signInToken, claimsPrincipal.GetAudience()).ConfigureAwait(false);
         }
 
-        private Task PreSignInCheckAsync<TUser>(TUser user) where TUser:User, new()
+        private Task PreSignInCheckAsync<TUser>(TUser user) where TUser : User, new()
         {
             ThrowIf.Null(user, nameof(user));
 
@@ -307,7 +315,7 @@ namespace HB.Component.Authorization
             return passwordHash.Equals(user.PasswordHash, GlobalSettings.Comparison);
         }
 
-        private Task OnPasswordCheckFailedAsync<TUser>(TUser user) where TUser:User, new()
+        private Task OnPasswordCheckFailedAsync<TUser>(TUser user) where TUser : User, new()
         {
             Task setAccessFailedCountTask = Task.CompletedTask;
 
@@ -339,34 +347,25 @@ namespace HB.Component.Authorization
 
                 await _database.CommitAsync(transactionContext).ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch
             {
                 await _database.RollbackAsync(transactionContext).ConfigureAwait(false);
 
-                throw ex;
+                throw;
             }
         }
 
         private ClaimsPrincipal ValidateTokenWithoutLifeCheck(RefreshContext context)
         {
-            try
+            TokenValidationParameters parameters = new TokenValidationParameters
             {
-                TokenValidationParameters parameters = new TokenValidationParameters
-                {
-                    ValidateAudience = false,
-                    ValidateLifetime = false,
-                    ValidIssuer = _options.OpenIdConnectConfiguration.Issuer,
-                    IssuerSigningKeys = _credentialBiz.GetIssuerSigningKeys()
-                };
+                ValidateAudience = false,
+                ValidateLifetime = false,
+                ValidIssuer = _options.OpenIdConnectConfiguration.Issuer,
+                IssuerSigningKeys = _credentialBiz.GetIssuerSigningKeys()
+            };
 
-                return new JwtSecurityTokenHandler().ValidateToken(context.AccessToken, parameters, out SecurityToken validatedToken);
-            }
-            catch
-            {
-                return null;
-            }
+            return new JwtSecurityTokenHandler().ValidateToken(context.AccessToken, parameters, out SecurityToken validatedToken);
         }
-
-
     }
 }
