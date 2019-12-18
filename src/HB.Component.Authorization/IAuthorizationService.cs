@@ -31,6 +31,8 @@ namespace HB.Component.Authorization
         /// <exception cref="HB.Framework.Database.DatabaseException"></exception>
         Task SignOutAsync(string signInTokenGuid);
 
+        /// <exception cref="FileNotFoundException">证书文件不存在</exception>
+        /// <exception cref="ArgumentException">Json无法解析</exception>
         JsonWebKeySet GetJsonWebKeySet();
     }
 }
