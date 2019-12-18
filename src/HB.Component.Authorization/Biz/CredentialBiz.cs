@@ -17,6 +17,13 @@ namespace HB.Component.Authorization
         private readonly JsonWebKeySet _jsonWebKeySet;
         private readonly ILogger _logger;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="options"></param>
+        /// <param name="logger"></param>
+        /// <exception cref="FileNotFoundException">证书文件不存在</exception>
+        /// <exception cref="ArgumentException">Json无法解析</exception>
         public CredentialBiz(IOptions<AuthorizationOptions> options, ILogger<CredentialBiz> logger)
         {
             _options = options.Value;
