@@ -66,6 +66,7 @@ namespace HB.Component.Authorization
 
                 await _database.CommitAsync(transactionContext).ConfigureAwait(false);
             }
+            //TODO: 考虑是否要捕捉DatabaseException，然后包装成Authorization Exception，再抛出？
             catch
             {
                 await _database.RollbackAsync(transactionContext).ConfigureAwait(false);
