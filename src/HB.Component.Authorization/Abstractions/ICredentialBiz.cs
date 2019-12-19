@@ -12,5 +12,7 @@ namespace HB.Component.Authorization.Abstractions
         IEnumerable<SecurityKey> GetIssuerSigningKeys();
 
         JsonWebKeySet GetJsonWebKeySet();
+
+        string GetJsonWebKeySetString();
     }
 }
