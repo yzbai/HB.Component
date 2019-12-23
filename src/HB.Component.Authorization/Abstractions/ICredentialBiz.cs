@@ -13,6 +13,5 @@ namespace HB.Component.Authorization.Abstractions
 
         JsonWebKeySet GetJsonWebKeySet();
 
-        string GetJsonWebKeySetString();
     }
 }

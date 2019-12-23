@@ -35,6 +35,5 @@ namespace HB.Component.Authorization
         /// <exception cref="ArgumentException">Json无法解析</exception>
         JsonWebKeySet GetJsonWebKeySet();
 
-        string GetJsonWebKeySetString();
     }
 }
