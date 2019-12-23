@@ -51,13 +51,6 @@ namespace HB.Component.Authorization
             return _credentialBiz.GetJsonWebKeySet();
         }
 
-        /// <exception cref="FileNotFoundException">证书文件不存在</exception>
-        /// <exception cref="ArgumentException">Json无法解析</exception>
-        public string GetJsonWebKeySetString()
-        {
-            return _credentialBiz.GetJsonWebKeySetString();
-        }
-
         /// <summary>
         /// 
         /// </summary>

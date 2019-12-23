@@ -147,7 +147,7 @@ namespace HB.Component.Identity
         public async Task SetPasswordByMobileAsync<TUser>(string mobile, string newPassword, TransactionContext transContext) where TUser : User, new()
         {
             ThrowIf.NullOrNotMobile(mobile, nameof(mobile));
-            ThrowIf.NullOrNotPassword(mobile, nameof(newPassword));
+            ThrowIf.NotPassword(mobile, nameof(newPassword), false);
 
             TUser user = await GetByMobileAsync<TUser>(mobile, transContext).ConfigureAwait(false);
 
@@ -205,7 +205,7 @@ namespace HB.Component.Identity
         {
             ThrowIf.Null(transContext, nameof(transContext));
             ThrowIf.NullOrNotMobile(mobile, nameof(mobile));
-            ThrowIf.NullOrNotPassword(password, nameof(password));
+            ThrowIf.NotPassword(password, nameof(password), true);
 
             #region Existense Check
 

@@ -26,7 +26,7 @@ namespace HB.Component.Identity
         /// <param name="user"></param>
         /// <param name="transContext"></param>
         /// <returns></returns>
-        public Task<IEnumerable<Claim>> CreateClaimsAsync<TUserClaim, TRole, TRoleOfUser>(User user, TransactionContext transContext) 
+        public async Task<IEnumerable<Claim>> CreateClaimsAsync<TUserClaim, TRole, TRoleOfUser>(User user, TransactionContext transContext)
             where TUserClaim : UserClaim, new()
             where TRole : Role, new()
             where TRoleOfUser : RoleOfUser, new()
@@ -45,35 +45,53 @@ namespace HB.Component.Identity
                 //new Claim(ClaimExtensionTypes.IsMobileConfirmed, user.MobileConfirmed.ToString(GlobalSettings.Culture))
             };
 
-            //并行
+            IEnumerable<TUserClaim> userClaims = await _userClaimBiz.GetAsync<TUserClaim>(user.Guid, transContext).ConfigureAwait(false);
 
-            return TaskUtil.Concurrence(
-                
-                _userClaimBiz.GetAsync<TUserClaim>(user.Guid, transContext), 
-                
-                _roleBiz.GetByUserGuidAsync<TRole, TRoleOfUser>(user.Guid, transContext),
-                
-                userClaims =>
+            userClaims.ForEach(item =>
+            {
+                if (item.AddToJwt)
                 {
-                    List<Claim> rts = new List<Claim>();
-                    userClaims.ForEach((item) =>
-                    {
-                        if (item.AddToJwt)
-                        {
-                            rts.Add(new Claim(item.ClaimType, item.ClaimValue));
-                        }
-                    });
-                    return rts;
-                },
+                    claims.Add(new Claim(item.ClaimType, item.ClaimValue));
+                }
+            });
 
-                roles =>
-                {
-                    List<Claim> rts = new List<Claim>();
+            IEnumerable<TRole> roles = await _roleBiz.GetByUserGuidAsync<TRole, TRoleOfUser>(user.Guid, transContext).ConfigureAwait(false);
 
-                    roles.Select(r => r.Name).ForEach(roleName => rts.Add(new Claim(ClaimExtensionTypes.Role, roleName)));
+            roles.Select(r => r.Name).ForEach(roleName =>
+            {
+                claims.Add(new Claim(ClaimExtensionTypes.Role, roleName));
+            });
 
-                    return rts;
-                });
+            return claims;
+
+            ////并行
+            //return TaskUtil.Concurrence(
+
+            //    _userClaimBiz.GetAsync<TUserClaim>(user.Guid, transContext),
+
+            //    _roleBiz.GetByUserGuidAsync<TRole, TRoleOfUser>(user.Guid, transContext),
+
+            //    userClaims =>
+            //    {
+            //        List<Claim> rts = new List<Claim>();
+            //        userClaims.ForEach((item) =>
+            //        {
+            //            if (item.AddToJwt)
+            //            {
+            //                rts.Add(new Claim(item.ClaimType, item.ClaimValue));
+            //            }
+            //        });
+            //        return rts;
+            //    },
+
+            //    roles =>
+            //    {
+            //        List<Claim> rts = new List<Claim>();
+
+            //        roles.Select(r => r.Name).ForEach(roleName => rts.Add(new Claim(ClaimExtensionTypes.Role, roleName)));
+
+            //        return rts;
+            //    });
         }
     }
 }

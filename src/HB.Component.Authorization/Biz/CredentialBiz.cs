@@ -15,7 +15,6 @@ namespace HB.Component.Authorization
         private readonly AuthorizationOptions _options;
         private readonly SigningCredentials _signingCredentials;
         private readonly JsonWebKeySet _jsonWebKeySet;
-        private readonly string _jsonWebKeySetString;
         private readonly ILogger _logger;
 
         /// <summary>
@@ -55,9 +54,9 @@ namespace HB.Component.Authorization
                 }
             };
 
-            _jsonWebKeySetString = SerializeUtil.ToJson(new { Keys = jsonWebKeys });
+            string jsonWebKeySetString = SerializeUtil.ToJson(new { Keys = jsonWebKeys });
 
-            _jsonWebKeySet = new JsonWebKeySet(_jsonWebKeySetString);
+            _jsonWebKeySet = new JsonWebKeySet(jsonWebKeySetString);
         }
 
         /// <summary>
@@ -67,11 +66,6 @@ namespace HB.Component.Authorization
         public JsonWebKeySet GetJsonWebKeySet()
         {
             return _jsonWebKeySet;
-        }
-
-        public string GetJsonWebKeySetString()
-        {
-            return _jsonWebKeySetString;
         }
 
         public IEnumerable<SecurityKey> GetIssuerSigningKeys()
