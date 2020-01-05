@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -59,7 +60,7 @@ namespace HB.Component.Authorization
         /// <exception cref="DatabaseException"></exception>
         public async Task SignOutAsync(string signInTokenGuid)
         {
-            TransactionContext transactionContext = await _database.BeginTransactionAsync<SignInToken>().ConfigureAwait(false);
+            TransactionContext transactionContext = await _database.BeginTransactionAsync<SignInToken>(IsolationLevel.ReadCommitted).ConfigureAwait(false);
             try
             {
                 await _signInTokenBiz.DeleteAsync(signInTokenGuid, transactionContext).ConfigureAwait(false);
@@ -82,7 +83,7 @@ namespace HB.Component.Authorization
         {
             ThrowIf.NullOrNotValid(context, nameof(context));
 
-            TransactionContext transactionContext = await _database.BeginTransactionAsync<SignInToken>().ConfigureAwait(false);
+            TransactionContext transactionContext = await _database.BeginTransactionAsync<SignInToken>(IsolationLevel.ReadCommitted).ConfigureAwait(false);
 
             try
             {
@@ -225,7 +226,7 @@ namespace HB.Component.Authorization
             //SignInToken 验证
             TUser user;
             SignInToken signInToken;
-            TransactionContext transactionContext = await _database.BeginTransactionAsync<SignInToken>().ConfigureAwait(false);
+            TransactionContext transactionContext = await _database.BeginTransactionAsync<SignInToken>(IsolationLevel.ReadCommitted).ConfigureAwait(false);
 
             try
             {
@@ -351,7 +352,7 @@ namespace HB.Component.Authorization
         private async Task BlackSignInTokenAsync(SignInToken signInToken)
         {
             //TODO: 详细记录Black SiginInToken 的历史纪录
-            TransactionContext transactionContext = await _database.BeginTransactionAsync<SignInToken>().ConfigureAwait(false);
+            TransactionContext transactionContext = await _database.BeginTransactionAsync<SignInToken>(IsolationLevel.ReadCommitted).ConfigureAwait(false);
             try
             {
                 await _signInTokenBiz.DeleteAsync(signInToken.Guid, transactionContext).ConfigureAwait(false);

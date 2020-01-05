@@ -1,4 +1,5 @@
 ﻿using HB.Component.Authorization.Abstractions;
+using HB.Component.Authorization.Properties;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -72,7 +73,7 @@ namespace HB.Component.Authorization
         {
             if (_jsonWebKeySet == null)
             {
-                return null;
+                throw new AuthorizationException(Resources.JsonWebKeySetIsNullErrorMessage);
             }
 
             return _jsonWebKeySet.GetSigningKeys();

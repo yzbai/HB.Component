@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -27,7 +28,7 @@ namespace HB.Component.Identity
 
         public async Task<TUser> CreateUserByMobileAsync<TUser>(string mobile, string userName, string password, bool mobileConfirmed) where TUser : User, new()
         {
-            TransactionContext transactionContext = await _database.BeginTransactionAsync<TUser>().ConfigureAwait(false);
+            TransactionContext transactionContext = await _database.BeginTransactionAsync<TUser>(IsolationLevel.ReadCommitted).ConfigureAwait(false);
             try
             {
                 TUser user = await _userBiz.CreateByMobileAsync<TUser>(mobile, userName, password, mobileConfirmed, transactionContext).ConfigureAwait(false);
@@ -59,7 +60,7 @@ namespace HB.Component.Identity
 
         public async Task SetAccessFailedCountAsync<TUser>(string userGuid, long count) where TUser : User, new()
         {
-            TransactionContext transactionContext = await _database.BeginTransactionAsync<TUser>().ConfigureAwait(false);
+            TransactionContext transactionContext = await _database.BeginTransactionAsync<TUser>(IsolationLevel.ReadCommitted).ConfigureAwait(false);
             try
             {
                 await _userBiz.SetAccessFailedCountAsync<TUser>(userGuid, count, transactionContext).ConfigureAwait(false);
@@ -75,7 +76,7 @@ namespace HB.Component.Identity
 
         public async Task SetLockoutAsync<TUser>(string userGuid, bool lockout, TimeSpan? lockoutTimeSpan = null) where TUser : User, new()
         {
-            TransactionContext transactionContext = await _database.BeginTransactionAsync<TUser>().ConfigureAwait(false);
+            TransactionContext transactionContext = await _database.BeginTransactionAsync<TUser>(IsolationLevel.ReadCommitted).ConfigureAwait(false);
 
             try
             {
@@ -100,7 +101,7 @@ namespace HB.Component.Identity
             where TRole : Role, new()
             where TRoleOfUser: RoleOfUser, new()
         {
-            TransactionContext transactionContext = await _database.BeginTransactionAsync<TUserClaim>().ConfigureAwait(false);
+            TransactionContext transactionContext = await _database.BeginTransactionAsync<TUserClaim>(IsolationLevel.ReadCommitted).ConfigureAwait(false);
             try
             {
                 IEnumerable<Claim> claims = await _claimsFactory.CreateClaimsAsync<TUserClaim, TRole, TRoleOfUser>(user, transactionContext).ConfigureAwait(false);
