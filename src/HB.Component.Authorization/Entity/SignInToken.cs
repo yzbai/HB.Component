@@ -8,15 +8,15 @@ namespace HB.Component.Authorization.Entity
     public class SignInToken : DatabaseEntity
     {
         [UniqueGuidEntityProperty]
-        public string Guid { get; set; }
+        public string Guid { get; set; } = default!;
 
         [ForeignKey(typeof(User))]
-        [GuidEntityProperty]
-        public string UserGuid { get; set; }
+        [GuidEntityProperty(NotNull = true)]
+        public string UserGuid { get; set; } = default!;
 
         [Required]
-        [EntityProperty]
-        public string RefreshToken { get; set; }
+        [EntityProperty(NotNull = true)]
+        public string RefreshToken { get; set; } = default!;
 
         [EntityProperty]
         public DateTimeOffset? ExpireAt { get; set; }
@@ -31,21 +31,21 @@ namespace HB.Component.Authorization.Entity
         #region Device
 
         [Required]
-        [EntityProperty]
-        public string DeviceId { get; set; }
+        [EntityProperty(NotNull = true)]
+        public string DeviceId { get; set; } = default!;
 
         [Required]
-        [EntityProperty]
-        public string DeviceType { get; set; }
+        [EntityProperty(NotNull = true)]
+        public string DeviceType { get; set; } = default!;
 
-        [EntityProperty]
-        public string DeviceVersion { get; set; }
+        [EntityProperty(NotNull = true)]
+        public string DeviceVersion { get; set; } = default!;
 
-        [EntityProperty]
-        public string DeviceAddress { get; set; }
+        [EntityProperty(NotNull = true)]
+        public string DeviceAddress { get; set; } = default!;
 
-        [EntityProperty]
-        public string DeviceIp { get; set; }
+        [EntityProperty(NotNull = true)]
+        public string DeviceIp { get; set; } = default!;
 
         #endregion
     }

@@ -1,6 +1,7 @@
 ﻿using HB.Component.Authorization;
 using HB.Component.Authorization.Abstractions;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 
 namespace Microsoft.Extensions.DependencyInjection

@@ -26,7 +26,7 @@ namespace HB.Component.Identity
             _claimsFactory = claimsFactory;
         }
 
-        public async Task<TUser> CreateUserByMobileAsync<TUser>(string mobile, string userName, string password, bool mobileConfirmed) where TUser : User, new()
+        public async Task<TUser> CreateUserByMobileAsync<TUser>(string mobile, string? userName, string? password, bool mobileConfirmed) where TUser : User, new()
         {
             TransactionContext transactionContext = await _database.BeginTransactionAsync<TUser>(IsolationLevel.ReadCommitted).ConfigureAwait(false);
             try
@@ -48,12 +48,12 @@ namespace HB.Component.Identity
             }
         }
 
-        public Task<TUser> GetUserByMobileAsync<TUser>(string mobile) where TUser : User, new()
+        public Task<TUser?> GetUserByMobileAsync<TUser>(string mobile) where TUser : User, new()
         {
             return _userBiz.GetByMobileAsync<TUser>(mobile);
         }
 
-        public Task<TUser> GetUserByUserNameAsync<TUser>(string userName) where TUser : User, new()
+        public Task<TUser?> GetUserByUserNameAsync<TUser>(string userName) where TUser : User, new()
         {
             return _userBiz.GetByUserNameAsync<TUser>(userName);
         }
@@ -91,7 +91,7 @@ namespace HB.Component.Identity
             }
         }
 
-        public Task<TUser> ValidateSecurityStampAsync<TUser>(string userGuid, string securityStamp) where TUser : User, new()
+        public Task<TUser?> ValidateSecurityStampAsync<TUser>(string userGuid, string? securityStamp) where TUser : User, new()
         {
             return _userBiz.ValidateSecurityStampAsync<TUser>(userGuid, securityStamp);
         }

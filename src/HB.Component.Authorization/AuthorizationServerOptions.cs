@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using System.Collections;
 using Microsoft.IdentityModel.Tokens;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace HB.Component.Authorization
 {
@@ -17,9 +18,10 @@ namespace HB.Component.Authorization
 
         public bool NeedAudienceToBeChecked { get; set; } = true;
 
-        public string CertificateSubject { get; set; }
+        [DisallowNull, NotNull]
+        public string? CertificateSubject { get; set; }
 
-        public OpenIdConnectConfiguration OpenIdConnectConfiguration { get; set; }
+        public OpenIdConnectConfiguration OpenIdConnectConfiguration { get; set; } = new OpenIdConnectConfiguration();
 
 
         /// <summary>

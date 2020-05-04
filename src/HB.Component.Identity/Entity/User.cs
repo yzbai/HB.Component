@@ -1,6 +1,7 @@
 ﻿using HB.Framework.Database.Entity;
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 
 namespace HB.Component.Identity.Entity
 {
@@ -12,7 +13,7 @@ namespace HB.Component.Identity.Entity
     {
         [Required]
         [UniqueGuidEntityProperty]
-        public string Guid { get; set; }
+        public string Guid { get; set; } = default!;
 
 
         //[Required]
@@ -21,35 +22,35 @@ namespace HB.Component.Identity.Entity
 
 
         [Required]
-        [GuidEntityProperty]
-        public string SecurityStamp { get; set; }
+        [GuidEntityProperty(NotNull = true)]
+        public string SecurityStamp { get; set; } = default!;
 
         /// <summary>
         /// 唯一, 可为空，一旦不为空后不可修改
         /// </summary>
         [UserName]
         [EntityProperty("用户名称", Length = 100, Unique = true)]
-        public string UserName { get; set; }
+        public string? UserName { get; set; }
         /// <summary>
         /// 唯一
         /// </summary>
         [Mobile]
         [EntityProperty("手机号", Unique = true, Length = 14)]
-        public string Mobile { get; set; }
+        public string? Mobile { get; set; }
 
         /// <summary>
         /// 唯一，可为空
         /// </summary>
         [EmailAddress]
         [EntityProperty("邮箱", Unique = true, Length = 256)]
-        public string Email { get; set; }
+        public string? Email { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
         [Password]
         [EntityProperty("密码")]
-        public string PasswordHash { get; set; }
+        public string? PasswordHash { get; set; }
 
         /// <summary>
         /// 未激活，可以进行注册，潜在用户

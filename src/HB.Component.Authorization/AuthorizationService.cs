@@ -83,17 +83,34 @@ namespace HB.Component.Authorization
         {
             ThrowIf.NullOrNotValid(context, nameof(context));
 
+            switch (context.SignInType)
+            {
+                case SignInType.ByMobileAndPassword:
+                    ThrowIf.NullOrEmpty(context.Mobile, "SignInContext.Mobile");
+                    ThrowIf.NullOrEmpty(context.Password, "SignInContext.Password");
+                    break;
+                case SignInType.BySms:
+                    ThrowIf.NullOrEmpty(context.Mobile, "SignInContext.Mobile");
+                    break;
+                case SignInType.ByUserNameAndPassword:
+                    ThrowIf.NullOrEmpty(context.UserName, "SignInContext.UserName");
+                    ThrowIf.NullOrEmpty(context.Password, "SignInContext.Password");
+                    break;
+                default:
+                    break;
+            }
+
             TransactionContext transactionContext = await _database.BeginTransactionAsync<SignInToken>(IsolationLevel.ReadCommitted).ConfigureAwait(false);
 
             try
             {
                 //查询用户
-                TUser user = context.SignInType switch
+                TUser? user = context.SignInType switch
                 {
-                    SignInType.ByUserNameAndPassword => await _identityService.GetUserByUserNameAsync<TUser>(context.UserName).ConfigureAwait(false),
-                    SignInType.BySms => await _identityService.GetUserByMobileAsync<TUser>(context.Mobile).ConfigureAwait(false),
-                    SignInType.ByMobileAndPassword => await _identityService.GetUserByMobileAsync<TUser>(context.Mobile).ConfigureAwait(false),
-                    _ => null
+                    SignInType.ByUserNameAndPassword => await _identityService.GetUserByUserNameAsync<TUser>(context.UserName!).ConfigureAwait(false),
+                    SignInType.BySms => await _identityService.GetUserByMobileAsync<TUser>(context.Mobile!).ConfigureAwait(false),
+                    SignInType.ByMobileAndPassword => await _identityService.GetUserByMobileAsync<TUser>(context.Mobile!).ConfigureAwait(false),
+                    _ => throw new NotImplementedException()
                 };
 
                 //不存在，则新建用户
@@ -101,7 +118,7 @@ namespace HB.Component.Authorization
 
                 if (user == null && context.SignInType == SignInType.BySms)
                 {
-                    user = await _identityService.CreateUserByMobileAsync<TUser>(context.Mobile, context.UserName, context.Password, true).ConfigureAwait(false);
+                    user = await _identityService.CreateUserByMobileAsync<TUser>(context.Mobile!, context.UserName, context.Password, true).ConfigureAwait(false);
 
                     newUserCreated = true;
                 }
@@ -114,7 +131,7 @@ namespace HB.Component.Authorization
                 //密码检查
                 if (context.SignInType == SignInType.ByMobileAndPassword || context.SignInType == SignInType.ByUserNameAndPassword)
                 {
-                    if (!PassowrdCheck(user, context.Password))
+                    if (!PassowrdCheck(user, context.Password!))
                     {
                         await OnPasswordCheckFailedAsync(user).ConfigureAwait(false);
 
@@ -148,12 +165,12 @@ namespace HB.Component.Authorization
 
                 //构造 Jwt
                 SignInResult result = new SignInResult
-                {
-                    AccessToken = await _jwtBuilder.BuildJwtAsync<TUserClaim, TRole, TRoleOfUser>(user, userToken, context.SignToWhere).ConfigureAwait(false),
-                    RefreshToken = userToken.RefreshToken,
-                    NewUserCreated = newUserCreated,
-                    CurrentUser = user
-                };
+                (
+                    accessToken : await _jwtBuilder.BuildJwtAsync<TUserClaim, TRole, TRoleOfUser>(user, userToken, context.SignToWhere).ConfigureAwait(false),
+                    refreshToken : userToken.RefreshToken,
+                    newUserCreated : newUserCreated,
+                    currentUser : user
+                );
 
                 return result;
 
@@ -192,7 +209,8 @@ namespace HB.Component.Authorization
 
             //AccessToken, Claims 验证
 
-            ClaimsPrincipal claimsPrincipal = null;
+            ClaimsPrincipal? claimsPrincipal = null;
+
             try
             {
                 claimsPrincipal = ValidateTokenWithoutLifeCheck(context);
@@ -215,7 +233,7 @@ namespace HB.Component.Authorization
                 throw new AuthorizationException(AuthorizationError.InvalideDeviceId, $"Context: {SerializeUtil.ToJson(context)}");
             }
 
-            string userGuid = claimsPrincipal.GetUserGuid();
+            string? userGuid = claimsPrincipal.GetUserGuid();
 
             if (string.IsNullOrEmpty(userGuid))
             {
@@ -224,8 +242,8 @@ namespace HB.Component.Authorization
 
 
             //SignInToken 验证
-            TUser user;
-            SignInToken signInToken;
+            TUser? user;
+            SignInToken? signInToken;
             TransactionContext transactionContext = await _database.BeginTransactionAsync<SignInToken>(IsolationLevel.ReadCommitted).ConfigureAwait(false);
 
             try

@@ -9,13 +9,13 @@ namespace HB.Component.Authorization
 {
     public class AuthorizationException : Exception
     {
-        private IDictionary _data;
+        private IDictionary? _data;
 
         public AuthorizationError Error { get; private set; }
 
-        public string Operation { get; private set; }
+        public string? Operation { get; private set; }
 
-        public AuthorizationException(AuthorizationError error, string message, Exception innerException= null, [CallerMemberName]string operation=""):base(message, innerException)
+        public AuthorizationException(AuthorizationError error, string message, Exception? innerException= null, [CallerMemberName]string operation=""):base(message, innerException)
         {
             Error = error;
             Operation = operation;

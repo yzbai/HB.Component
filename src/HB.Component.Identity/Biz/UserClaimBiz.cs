@@ -17,10 +17,8 @@ namespace HB.Component.Identity
             _db = database;
         }
 
-        public Task<IEnumerable<TUserClaim>> GetAsync<TUserClaim>(string userGuid, TransactionContext transContext = null) where TUserClaim : UserClaim, new()
+        public Task<IEnumerable<TUserClaim>> GetAsync<TUserClaim>(string userGuid, TransactionContext? transContext = null) where TUserClaim : UserClaim, new()
         {
-            ThrowIf.NullOrEmpty(userGuid, nameof(userGuid));
-
             return _db.RetrieveAsync<TUserClaim>(uc => uc.UserGuid == userGuid, transContext);
         }
     }

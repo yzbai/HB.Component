@@ -31,10 +31,6 @@ namespace HB.Component.Identity
             where TRole : Role, new()
             where TRoleOfUser : RoleOfUser, new()
         {
-            ThrowIf.Null(transContext, nameof(transContext));
-
-            if (user == null) { return null; }
-
             IList<Claim> claims = new List<Claim>
             {
                 new Claim(ClaimExtensionTypes.UserGuid, user.Guid),

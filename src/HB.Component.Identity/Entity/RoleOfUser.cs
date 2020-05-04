@@ -1,5 +1,6 @@
 ﻿using HB.Framework.Database.Entity;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace HB.Component.Identity.Entity
 {
@@ -9,15 +10,16 @@ namespace HB.Component.Identity.Entity
     public abstract class RoleOfUser : DatabaseEntity
     {
         [UniqueGuidEntityProperty]
-        public string Guid { get; set; }
+        public string Guid { get; set; } = default!;
 
         [ForeignKey(typeof(User))]
-        [GuidEntityProperty]
-        public string UserGuid { get; set; }
+        [GuidEntityProperty(NotNull = true)]
+        [DisallowNull, NotNull]
+        public string UserGuid { get; set; } = default!;
 
 
         [ForeignKey(typeof(Role))]
-        [GuidEntityProperty]
-        public string RoleGuid { get; set; }
+        [GuidEntityProperty(NotNull = true)]
+        public string RoleGuid { get; set; } = default!;
     }
 }

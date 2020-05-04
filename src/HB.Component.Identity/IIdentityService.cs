@@ -9,10 +9,10 @@ namespace HB.Component.Identity
 {
     public interface IIdentityService
     {
-        Task<TUser> ValidateSecurityStampAsync<TUser>(string userGuid, string securityStamp) where TUser : User, new();
-        Task<TUser> GetUserByMobileAsync<TUser>(string mobile) where TUser : User, new();
-        Task<TUser> GetUserByUserNameAsync<TUser>(string userName) where TUser : User, new();
-        Task<TUser> CreateUserByMobileAsync<TUser>(string mobile, string userName, string password, bool mobileConfirmed) where TUser : User, new();
+        Task<TUser?> ValidateSecurityStampAsync<TUser>(string userGuid, string? securityStamp) where TUser : User, new();
+        Task<TUser?> GetUserByMobileAsync<TUser>(string mobile) where TUser : User, new();
+        Task<TUser?> GetUserByUserNameAsync<TUser>(string userName) where TUser : User, new();
+        Task<TUser> CreateUserByMobileAsync<TUser>(string mobile, string? userName, string? password, bool mobileConfirmed) where TUser : User, new();
         Task SetLockoutAsync<TUser>(string userGuid, bool lockout, TimeSpan? lockoutTimeSpan = null) where TUser : User, new();
         Task SetAccessFailedCountAsync<TUser>(string userGuid, long count) where TUser : User, new();
         Task<IEnumerable<Claim>> GetUserClaimAsync<TUserClaim, TRole, TRoleOfUser>(User user)
