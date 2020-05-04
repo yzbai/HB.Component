@@ -7,15 +7,18 @@ using System.Text;
 
 namespace HB.Component.Authorization
 {
-    public class AuthorizationException : Exception
+    public class AuthorizationException : FrameworkException
     {
         private IDictionary? _data;
+
+        public override FrameworkExceptionType ExceptionType { get => FrameworkExceptionType.Authorization; }
 
         public AuthorizationError Error { get; private set; }
 
         public string? Operation { get; private set; }
 
-        public AuthorizationException(AuthorizationError error, string message, Exception? innerException= null, [CallerMemberName]string operation=""):base(message, innerException)
+        public AuthorizationException(AuthorizationError error, string message, Exception? innerException= null, [CallerMemberName]string operation="")
+            :this(message, innerException)
         {
             Error = error;
             Operation = operation;
@@ -41,11 +44,11 @@ namespace HB.Component.Authorization
         {
         }
 
-        public AuthorizationException(string message) : base(message)
+        public AuthorizationException(string? message) : base(message)
         {
         }
 
-        public AuthorizationException(string message, Exception innerException) : base(message, innerException)
+        public AuthorizationException(string? message, Exception? innerException) : base(message, innerException)
         {
         }
     }

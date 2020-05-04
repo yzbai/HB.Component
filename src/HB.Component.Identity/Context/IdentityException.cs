@@ -6,15 +6,17 @@ using System.Text;
 
 namespace HB.Component.Identity
 {
-    public class IdentityException : Exception
+    public class IdentityException : FrameworkException
     {
         private IDictionary? _data;
+
+        public override FrameworkExceptionType ExceptionType { get => FrameworkExceptionType.Identity; }
 
         public IdentityError Error { get; private set; }
 
         public string? Operation { get; private set; }
 
-        public IdentityException(IdentityError error, string message, Exception? innerException= null,  [CallerMemberName]string operation = "") : base(message, innerException)
+        public IdentityException(IdentityError error, string message, Exception? innerException= null,  [CallerMemberName]string operation = "") : this(message, innerException)
         {
             Error = error;
             Operation = operation;
@@ -40,11 +42,11 @@ namespace HB.Component.Identity
         {
         }
 
-        public IdentityException(string message) : base(message)
+        public IdentityException(string? message) : base(message)
         {
         }
 
-        public IdentityException(string message, Exception innerException) : base(message, innerException)
+        public IdentityException(string? message, Exception? innerException) : base(message, innerException)
         {
         }
     }
