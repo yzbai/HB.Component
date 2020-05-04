@@ -8,31 +8,31 @@ namespace HB.Component.Authorization.Entity
     public class ThirdPartyLogin : DatabaseEntity
     {
         [UniqueGuidEntityProperty]
-        public string Guid { get; set; }
+        public string Guid { get; set; } = default!;
 
         [ForeignKey(typeof(User))]
-        [GuidEntityProperty]
-        public string UserGuid { get; set; }
+        [GuidEntityProperty(NotNull = true)]
+        public string UserGuid { get; set; } = default!;
 
-        [EntityProperty("登陆提供者", Length=500)]
-        public string LoginProvider { get; set; }
+        [EntityProperty("登陆提供者", Length = 500, NotNull = true)]
+        public string LoginProvider { get; set; } = default!;
 
-        [EntityProperty("登陆key", Length=500)]
-        public string ProviderKey { get; set; }
+        [EntityProperty("登陆key", Length=500, NotNull = true)]
+        public string ProviderKey { get; set; } = default!;
 
-        [EntityProperty("提供者显示名称", Length = 500)]
-        public string ProviderDisplayName { get; set; }
+        [EntityProperty("提供者显示名称", Length = 500, NotNull = true)]
+        public string ProviderDisplayName { get; set; } = default!;
 
-        [EntityProperty("")]
-        public string SnsName { get; set; }
+        [EntityProperty("", NotNull = true)]
+        public string SnsName { get; set; } = default!;
 
-        [EntityProperty("")]
-        public string SnsId { get; set; }
+        [EntityProperty("", NotNull = true)]
+        public string SnsId { get; set; } = default!;
 
-        [EntityProperty("")]
-        public string AccessToken { get; set; }
+        [EntityProperty("", NotNull = true)]
+        public string AccessToken { get; set; } = default!;
 
         [EntityProperty("", Length = 1024)]
-        public string IconAddress { get; set; }
+        public string? IconAddress { get; set; }
     }
 }

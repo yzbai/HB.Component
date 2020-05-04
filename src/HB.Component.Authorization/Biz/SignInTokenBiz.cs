@@ -18,7 +18,7 @@ namespace HB.Component.Authorization
             _db = database;
         }
 
-        public async Task<SignInToken> CreateAsync(string userGuid, string deviceId, string deviceType, string deviceVersion, string deviceAddress, string ipAddress, TimeSpan expireTimeSpan, TransactionContext transContext = null)
+        public async Task<SignInToken> CreateAsync(string userGuid, string deviceId, string deviceType, string deviceVersion, string deviceAddress, string ipAddress, TimeSpan expireTimeSpan, TransactionContext? transContext = null)
         {
             SignInToken token = new SignInToken
             {
@@ -74,24 +74,22 @@ namespace HB.Component.Authorization
             await _db.BatchDeleteAsync(resultList, transContext).ConfigureAwait(false);
         }
 
-        public Task<SignInToken> GetAsync(string signInTokenGuid, string refreshToken, string deviceId, string userGuid, TransactionContext transContext = null)
+        public async Task<SignInToken?> GetAsync(string? signInTokenGuid, string? refreshToken, string deviceId, string? userGuid, TransactionContext? transContext = null)
         {
             if (signInTokenGuid.IsNullOrEmpty() || refreshToken.IsNullOrEmpty() || userGuid.IsNullOrEmpty())
             {
                 return null;
             }
 
-            return _db.ScalarAsync<SignInToken>(s =>
+            return await _db.ScalarAsync<SignInToken>(s =>
                 s.UserGuid == userGuid &&
                 s.Guid == signInTokenGuid &&
                 s.RefreshToken == refreshToken &&
-                s.DeviceId == deviceId, transContext);
+                s.DeviceId == deviceId, transContext).ConfigureAwait(false);
         }
 
-        public Task UpdateAsync(SignInToken signInToken, TransactionContext transContext = null)
+        public Task UpdateAsync(SignInToken signInToken, TransactionContext? transContext = null)
         {
-            ThrowIf.Null(signInToken, nameof(signInToken));
-
             return _db.UpdateAsync(signInToken, transContext);
         }
     }

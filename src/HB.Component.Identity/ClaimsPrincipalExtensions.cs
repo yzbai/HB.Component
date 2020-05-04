@@ -6,7 +6,7 @@ namespace System.Security.Claims
 {
     public static class ClaimsPrincipalExtensions
     {
-        public static string GetClaimValue(this ClaimsPrincipal principal, string claimExtensionType)
+        public static string? GetClaimValue(this ClaimsPrincipal principal, string claimExtensionType)
         {
             principal.ThrowIfNull(nameof(principal));
 
@@ -20,27 +20,27 @@ namespace System.Security.Claims
             return null;
         }
 
-        public static string GetUserGuid(this ClaimsPrincipal principal)
+        public static string? GetUserGuid(this ClaimsPrincipal principal)
         {
             return principal.GetClaimValue(ClaimExtensionTypes.UserGuid);
         }
 
-        public static string GetUserSecurityStamp(this ClaimsPrincipal principal)
+        public static string? GetUserSecurityStamp(this ClaimsPrincipal principal)
         {
             return principal.GetClaimValue(ClaimExtensionTypes.SecurityStamp);
         }
 
-        public static string GetAudience(this ClaimsPrincipal principal)
+        public static string? GetAudience(this ClaimsPrincipal principal)
         {
             return principal.GetClaimValue(ClaimExtensionTypes.Audience);
         }
 
-        public static string GetSignInTokenGuid(this ClaimsPrincipal principal)
+        public static string? GetSignInTokenGuid(this ClaimsPrincipal principal)
         {
             return principal.GetClaimValue(ClaimExtensionTypes.SignInTokenGuid);
         }
 
-        public static string GetDeviceId(this ClaimsPrincipal principal)
+        public static string? GetDeviceId(this ClaimsPrincipal principal)
         {
             return principal.GetClaimValue(ClaimExtensionTypes.DeviceId);
         }

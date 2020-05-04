@@ -12,21 +12,22 @@ namespace HB.Component.Authorization.Abstractions
 
 
         [UserName]
-        public string UserName { get; set; }
+        public string? UserName { get; set; }
 
         [Password]
-        public string Password { get; set; }
+        public string? Password { get; set; }
 
         [Mobile]
-        public string Mobile { get; set; }
+        public string? Mobile { get; set; }
+
         public bool RememberMe { get; set; }
 
-        public string DeviceId { get; set; }
-        public string DeviceType { get; set; }
-        public string DeviceVersion { get; set; }
-        public string DeviceAddress { get; set; }
-        public string DeviceIp { get; set; }
+        public string DeviceId { get; set; } = default!;
+        public string DeviceType { get; set; } = default!;
+        public string DeviceVersion { get; set; } = default!;
+        public string DeviceAddress { get; set; } = default!;
+        public string DeviceIp { get; set; } = default!;
 
-        public string SignToWhere { get; set; }
+        public string SignToWhere { get; set; } = default!;
     }
 }

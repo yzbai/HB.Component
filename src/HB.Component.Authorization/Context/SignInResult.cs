@@ -16,5 +16,13 @@ namespace HB.Component.Authorization
         public bool NewUserCreated { get; set; }
 
         public User CurrentUser { get; set; }
+
+        public SignInResult(string accessToken, string refreshToken, bool newUserCreated, User currentUser)
+        {
+            AccessToken = accessToken;
+            RefreshToken = refreshToken;
+            NewUserCreated = newUserCreated;
+            CurrentUser = currentUser;
+        }
     }
 }

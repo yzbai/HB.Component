@@ -30,7 +30,7 @@ namespace HB.Component.Authorization
             _options = options.Value;
             _logger = logger;
 
-            X509Certificate2 cert = CertificateUtil.GetBySubject(_options.CertificateSubject);
+            X509Certificate2? cert = CertificateUtil.GetBySubject(_options.CertificateSubject);
 
             if (cert == null)
             {
@@ -42,7 +42,7 @@ namespace HB.Component.Authorization
 
             _signingCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.RsaSha256Signature);
 
-            RSA publicKey = securityKey.PublicKey as RSA;
+            RSA publicKey = (RSA)securityKey.PublicKey;
             RSAParameters parameters = publicKey.ExportParameters(false);
 
             IList<JsonWebKey> jsonWebKeys = new List<JsonWebKey> {

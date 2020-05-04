@@ -6,15 +6,15 @@ namespace HB.Component.Authorization.Abstractions
     public class RefreshContext : ValidatableObject
     {
         [Required]
-        public string AccessToken { get; set; }
+        public string AccessToken { get; set; } = default!;
 
         [Required]
-        public string RefreshToken { get; set; }
+        public string RefreshToken { get; set; } = default!;
 
         [Required]
-        public string DeviceId { get; set; }
-        public string DeviceType { get; set; }
-        public string DeviceVersion { get; set; }
-        public string DeviceAddress { get; set; }
+        public string DeviceId { get; set; } = default!;
+        public string DeviceType { get; set; } = default!;
+        public string DeviceVersion { get; set; } = default!;
+        public string DeviceAddress { get; set; } = default!;
     }
 }
