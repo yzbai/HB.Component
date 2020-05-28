@@ -1,6 +1,4 @@
-﻿using System;
-using System.Globalization;
-using System.Linq;
+﻿using System.Linq;
 
 namespace System.Security.Claims
 {
@@ -8,8 +6,6 @@ namespace System.Security.Claims
     {
         public static string? GetClaimValue(this ClaimsPrincipal principal, string claimExtensionType)
         {
-            principal.ThrowIfNull(nameof(principal));
-
             if (principal.HasClaim(c => c.Type == claimExtensionType))
             {
                 Claim claim = principal.Claims.First(c => c.Type == claimExtensionType);
@@ -44,7 +40,7 @@ namespace System.Security.Claims
         {
             return principal.GetClaimValue(ClaimExtensionTypes.DeviceId);
         }
-        
+
         //public static string GetAuthtoken(this ClaimsPrincipal principal)
         //{
         //    return principal.GetClaimValue(ClaimExtensionTypes.Authtoken);

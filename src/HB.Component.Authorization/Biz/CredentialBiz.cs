@@ -69,6 +69,11 @@ namespace HB.Component.Authorization
             return _jsonWebKeySet;
         }
 
+        /// <summary>
+        /// GetIssuerSigningKeys
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="HB.Component.Authorization.AuthorizationException"></exception>
         public IEnumerable<SecurityKey> GetIssuerSigningKeys()
         {
             if (_jsonWebKeySet == null)

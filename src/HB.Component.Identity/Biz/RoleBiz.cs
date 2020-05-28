@@ -17,6 +17,13 @@ namespace HB.Component.Identity
             _database = database;
         }
 
+        /// <summary>
+        /// GetByUserGuidAsync
+        /// </summary>
+        /// <param name="userGuid"></param>
+        /// <param name="transContext"></param>
+        /// <returns></returns>
+        /// <exception cref="DatabaseException"></exception>
         public Task<IEnumerable<TRole>> GetByUserGuidAsync<TRole, TRoleOfUser>(string userGuid, TransactionContext? transContext = null) 
             where TRole : Role, new() 
             where TRoleOfUser : RoleOfUser, new()
