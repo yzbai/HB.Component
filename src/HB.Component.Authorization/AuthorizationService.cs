@@ -4,7 +4,6 @@ using HB.Component.Identity;
 using HB.Component.Identity.Entity;
 using HB.Framework.Database;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -75,13 +74,21 @@ namespace HB.Component.Authorization
             }
         }
 
+        /// <summary>
+        /// SignInAsync
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        /// <exception cref="HB.Framework.Common.ValidateErrorException"></exception>
+        /// <exception cref="HB.Component.Authorization.AuthorizationException"></exception>
+        /// <exception cref="DatabaseException"></exception>
         public async Task<SignInResult> SignInAsync<TUser, TUserClaim, TRole, TRoleOfUser>(SignInContext context)
             where TUser : User, new()
             where TUserClaim : UserClaim, new()
             where TRole : Role, new()
             where TRoleOfUser : RoleOfUser, new()
         {
-            ThrowIf.NullOrNotValid(context, nameof(context));
+            ThrowIf.NotValid(context);
 
             switch (context.SignInType)
             {
@@ -110,7 +117,7 @@ namespace HB.Component.Authorization
                     SignInType.ByUserNameAndPassword => await _identityService.GetUserByUserNameAsync<TUser>(context.UserName!).ConfigureAwait(false),
                     SignInType.BySms => await _identityService.GetUserByMobileAsync<TUser>(context.Mobile!).ConfigureAwait(false),
                     SignInType.ByMobileAndPassword => await _identityService.GetUserByMobileAsync<TUser>(context.Mobile!).ConfigureAwait(false),
-                    _ => throw new NotImplementedException()
+                    _ => null
                 };
 
                 //不存在，则新建用户
@@ -166,10 +173,10 @@ namespace HB.Component.Authorization
                 //构造 Jwt
                 SignInResult result = new SignInResult
                 (
-                    accessToken : await _jwtBuilder.BuildJwtAsync<TUserClaim, TRole, TRoleOfUser>(user, userToken, context.SignToWhere).ConfigureAwait(false),
-                    refreshToken : userToken.RefreshToken,
-                    newUserCreated : newUserCreated,
-                    currentUser : user
+                    accessToken: await _jwtBuilder.BuildJwtAsync<TUserClaim, TRole, TRoleOfUser>(user, userToken, context.SignToWhere).ConfigureAwait(false),
+                    refreshToken: userToken.RefreshToken,
+                    newUserCreated: newUserCreated,
+                    currentUser: user
                 );
 
                 return result;
@@ -188,15 +195,16 @@ namespace HB.Component.Authorization
         /// </summary>
         /// <param name="context"></param>
         /// <returns>新的AccessToken</returns>
-        /// <exception cref="AuthorizationException"></exception>
         /// <exception cref="DatabaseException"></exception>
+        /// <exception cref="HB.Framework.Common.ValidateErrorException"></exception>
+        /// <exception cref="HB.Component.Authorization.AuthorizationException"></exception>
         public async Task<string> RefreshAccessTokenAsync<TUser, TUserClaim, TRole, TRoleOfUser>(RefreshContext context)
             where TUser : User, new()
             where TUserClaim : UserClaim, new()
             where TRole : Role, new()
             where TRoleOfUser : RoleOfUser, new()
         {
-            ThrowIf.NullOrNotValid(context, nameof(context));
+            ThrowIf.NotValid(context);
 
             //频率检查
 
@@ -215,7 +223,7 @@ namespace HB.Component.Authorization
             {
                 claimsPrincipal = ValidateTokenWithoutLifeCheck(context);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new AuthorizationException(AuthorizationError.InvalideAccessToken, $"Context: {SerializeUtil.ToJson(context)}", ex);
             }
@@ -295,6 +303,12 @@ namespace HB.Component.Authorization
             return await _jwtBuilder.BuildJwtAsync<TUserClaim, TRole, TRoleOfUser>(user, signInToken, claimsPrincipal.GetAudience()).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// PreSignInCheckAsync
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        /// <exception cref="HB.Component.Authorization.AuthorizationException"></exception>
         private Task PreSignInCheckAsync<TUser>(TUser user) where TUser : User, new()
         {
             ThrowIf.Null(user, nameof(user));
@@ -339,6 +353,14 @@ namespace HB.Component.Authorization
             return Task.WhenAll(setLockTask, setAccessFailedCountTask);
         }
 
+        /// <summary>
+        /// PassowrdCheck
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="password"></param>
+        /// <returns></returns>
+        /// <exception cref="System.Reflection.TargetInvocationException">Ignore.</exception>
+        /// <exception cref="ObjectDisposedException">Ignore.</exception>
         private static bool PassowrdCheck(User user, string password)
         {
             string passwordHash = SecurityUtil.EncryptPwdWithSalt(password, user.Guid);
@@ -367,6 +389,13 @@ namespace HB.Component.Authorization
             return Task.WhenAll(setAccessFailedCountTask, setLockoutTask);
         }
 
+        /// <summary>
+        /// BlackSignInTokenAsync
+        /// </summary>
+        /// <param name="signInToken"></param>
+        /// <returns></returns>
+        /// <exception cref="DatabaseException"></exception>
+        /// <exception cref="HB.Framework.Common.ValidateErrorException"></exception>
         private async Task BlackSignInTokenAsync(SignInToken signInToken)
         {
             //TODO: 详细记录Black SiginInToken 的历史纪录
@@ -385,6 +414,23 @@ namespace HB.Component.Authorization
             }
         }
 
+        /// <summary>
+        /// ValidateTokenWithoutLifeCheck
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        /// <exception cref="SecurityTokenDecryptionFailedException"></exception>
+        /// <exception cref="SecurityTokenEncryptionKeyNotFoundException"></exception>
+        /// <exception cref="SecurityTokenException"></exception>
+        /// <exception cref="SecurityTokenExpiredException"></exception>
+        /// <exception cref="SecurityTokenInvalidAudienceException"></exception>
+        /// <exception cref="SecurityTokenInvalidLifetimeException"></exception>
+        /// <exception cref="SecurityTokenInvalidSignatureException"></exception>
+        /// <exception cref="SecurityTokenNoExpirationException"></exception>
+        /// <exception cref="SecurityTokenNotYetValidException"></exception>
+        /// <exception cref="SecurityTokenReplayAddFailedException"></exception>
+        /// <exception cref="SecurityTokenReplayDetectedException"></exception>
+        /// <exception cref="HB.Component.Authorization.AuthorizationException"></exception>
         private ClaimsPrincipal ValidateTokenWithoutLifeCheck(RefreshContext context)
         {
             TokenValidationParameters parameters = new TokenValidationParameters

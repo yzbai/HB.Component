@@ -1,8 +1,6 @@
 ﻿using HB.Component.Identity.Abstractions;
 using HB.Component.Identity.Entity;
 using HB.Framework.Database;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -26,6 +24,15 @@ namespace HB.Component.Identity
             _claimsFactory = claimsFactory;
         }
 
+        /// <summary>
+        /// CreateUserByMobileAsync
+        /// </summary>
+        /// <param name="mobile"></param>
+        /// <param name="userName"></param>
+        /// <param name="password"></param>
+        /// <param name="mobileConfirmed"></param>
+        /// <returns></returns>
+        /// <exception cref="DatabaseException"></exception>
         public async Task<TUser> CreateUserByMobileAsync<TUser>(string mobile, string? userName, string? password, bool mobileConfirmed) where TUser : User, new()
         {
             TransactionContext transactionContext = await _database.BeginTransactionAsync<TUser>(IsolationLevel.ReadCommitted).ConfigureAwait(false);
@@ -58,6 +65,13 @@ namespace HB.Component.Identity
             return _userBiz.GetByUserNameAsync<TUser>(userName);
         }
 
+        /// <summary>
+        /// SetAccessFailedCountAsync
+        /// </summary>
+        /// <param name="userGuid"></param>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        /// <exception cref="DatabaseException"></exception>
         public async Task SetAccessFailedCountAsync<TUser>(string userGuid, long count) where TUser : User, new()
         {
             TransactionContext transactionContext = await _database.BeginTransactionAsync<TUser>(IsolationLevel.ReadCommitted).ConfigureAwait(false);
@@ -74,6 +88,14 @@ namespace HB.Component.Identity
             }
         }
 
+        /// <summary>
+        /// SetLockoutAsync
+        /// </summary>
+        /// <param name="userGuid"></param>
+        /// <param name="lockout"></param>
+        /// <param name="lockoutTimeSpan"></param>
+        /// <returns></returns>
+        /// <exception cref="DatabaseException"></exception>
         public async Task SetLockoutAsync<TUser>(string userGuid, bool lockout, TimeSpan? lockoutTimeSpan = null) where TUser : User, new()
         {
             TransactionContext transactionContext = await _database.BeginTransactionAsync<TUser>(IsolationLevel.ReadCommitted).ConfigureAwait(false);
@@ -96,10 +118,16 @@ namespace HB.Component.Identity
             return _userBiz.ValidateSecurityStampAsync<TUser>(userGuid, securityStamp);
         }
 
+        /// <summary>
+        /// GetUserClaimAsync
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        /// <exception cref="DatabaseException"></exception>
         public async Task<IEnumerable<Claim>> GetUserClaimAsync<TUserClaim, TRole, TRoleOfUser>(User user)
             where TUserClaim : UserClaim, new()
             where TRole : Role, new()
-            where TRoleOfUser: RoleOfUser, new()
+            where TRoleOfUser : RoleOfUser, new()
         {
             TransactionContext transactionContext = await _database.BeginTransactionAsync<TUserClaim>(IsolationLevel.ReadCommitted).ConfigureAwait(false);
             try

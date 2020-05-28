@@ -1,7 +1,5 @@
 ﻿using Microsoft.IdentityModel.Tokens;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace HB.Component.Authorization.Abstractions
 {
@@ -9,6 +7,7 @@ namespace HB.Component.Authorization.Abstractions
     {
         SigningCredentials GetSigningCredentials();
 
+        /// <exception cref="HB.Component.Authorization.AuthorizationException"></exception>
         IEnumerable<SecurityKey> GetIssuerSigningKeys();
 
         JsonWebKeySet GetJsonWebKeySet();

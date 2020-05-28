@@ -2,7 +2,6 @@
 using HB.Component.Authorization.Entity;
 using HB.Framework.Database;
 using HB.Framework.Database.SQL;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -18,6 +17,20 @@ namespace HB.Component.Authorization
             _db = database;
         }
 
+        /// <summary>
+        /// CreateAsync
+        /// </summary>
+        /// <param name="userGuid"></param>
+        /// <param name="deviceId"></param>
+        /// <param name="deviceType"></param>
+        /// <param name="deviceVersion"></param>
+        /// <param name="deviceAddress"></param>
+        /// <param name="ipAddress"></param>
+        /// <param name="expireTimeSpan"></param>
+        /// <param name="transContext"></param>
+        /// <returns></returns>
+        /// <exception cref="HB.Framework.Common.ValidateErrorException"></exception>
+        /// <exception cref="DatabaseException"></exception>
         public async Task<SignInToken> CreateAsync(string userGuid, string deviceId, string deviceType, string deviceVersion, string deviceAddress, string ipAddress, TimeSpan expireTimeSpan, TransactionContext? transContext = null)
         {
             SignInToken token = new SignInToken
@@ -40,9 +53,12 @@ namespace HB.Component.Authorization
             return token;
         }
 
+        /// <exception cref="System.ArgumentException"></exception>
+        /// <exception cref="DatabaseException"></exception>
+        /// <exception cref="HB.Framework.Common.ValidateErrorException"></exception>
         public async Task DeleteAppClientTokenByUserGuidAsync(string userGuid, TransactionContext transContext)
         {
-            ThrowIf.NullOrEmpty(userGuid, nameof(userGuid));
+            ThrowIf.Empty(userGuid, nameof(userGuid));
             ThrowIf.Null(transContext, nameof(transContext));
 
             WhereExpression<SignInToken> where = _db.Where<SignInToken>()
@@ -54,6 +70,14 @@ namespace HB.Component.Authorization
             await _db.BatchDeleteAsync(resultList, transContext).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// DeleteByUserGuidAsync
+        /// </summary>
+        /// <param name="userGuid"></param>
+        /// <param name="transContext"></param>
+        /// <returns></returns>
+        /// <exception cref="HB.Framework.Common.ValidateErrorException"></exception>
+        /// <exception cref="DatabaseException"></exception>
         public async Task DeleteByUserGuidAsync(string userGuid, TransactionContext transContext)
         {
             ThrowIf.NullOrEmpty(userGuid, nameof(userGuid));
@@ -64,6 +88,14 @@ namespace HB.Component.Authorization
             await _db.BatchDeleteAsync(resultList, transContext).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// DeleteAsync
+        /// </summary>
+        /// <param name="signInTokenGuid"></param>
+        /// <param name="transContext"></param>
+        /// <returns></returns>
+        /// <exception cref="HB.Framework.Common.ValidateErrorException"></exception>
+        /// <exception cref="DatabaseException"></exception>
         public async Task DeleteAsync(string signInTokenGuid, TransactionContext transContext)
         {
             ThrowIf.NullOrEmpty(signInTokenGuid, nameof(signInTokenGuid));
@@ -88,6 +120,14 @@ namespace HB.Component.Authorization
                 s.DeviceId == deviceId, transContext).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// UpdateAsync
+        /// </summary>
+        /// <param name="signInToken"></param>
+        /// <param name="transContext"></param>
+        /// <returns></returns>
+        /// <exception cref="HB.Framework.Common.ValidateErrorException"></exception>
+        /// <exception cref="DatabaseException"></exception>
         public Task UpdateAsync(SignInToken signInToken, TransactionContext? transContext = null)
         {
             return _db.UpdateAsync(signInToken, transContext);
