@@ -44,7 +44,7 @@ namespace HB.Component.Identity
 
         public Task<TUser?> GetByMobileAsync<TUser>(string mobile, TransactionContext? transContext = null) where TUser : User, new()
         {
-            return _db.ScalarAsync<TUser>(u => mobile.Equals(u.Mobile, GlobalSettings.Comparison), transContext);
+            return _db.ScalarAsync<TUser>(u => u.Mobile == mobile, transContext);
         }
 
         public Task<TUser?> GetByUserNameAsync<TUser>(string userName, TransactionContext? transContext = null) where TUser : User, new()
@@ -54,7 +54,7 @@ namespace HB.Component.Identity
 
         public Task<TUser?> GetByEmailAsync<TUser>(string email, TransactionContext? transContext = null) where TUser : User, new()
         {
-            return _db.ScalarAsync<TUser>(u => email.Equals(u.Email, GlobalSettings.ComparisonIgnoreCase), transContext);
+            return _db.ScalarAsync<TUser>(u => u.Email == email, transContext);
         }
 
         public Task<IEnumerable<TUser>> GetAsync<TUser>(IEnumerable<string> userGuids, TransactionContext? transContext = null) where TUser : User, new()
