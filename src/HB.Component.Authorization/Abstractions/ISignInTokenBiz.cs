@@ -9,7 +9,7 @@ namespace HB.Component.Authorization.Abstractions
     {
         /// <exception cref="HB.Framework.Common.ValidateErrorException"></exception>
         /// <exception cref="DatabaseException"></exception>
-        Task<SignInToken> CreateAsync(string userGuid, string deviceId, string deviceType, string deviceVersion, string deviceAddress, string ipAddress, TimeSpan expireTimeSpan, TransactionContext? transContext = null);
+        Task<SignInToken> CreateAsync(string userGuid, string deviceId, string deviceType, string deviceVersion, /*string deviceAddress,*/ string ipAddress, TimeSpan expireTimeSpan, TransactionContext? transContext = null);
 
 
         /// <exception cref="System.ArgumentException"></exception>

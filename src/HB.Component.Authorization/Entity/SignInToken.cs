@@ -41,8 +41,8 @@ namespace HB.Component.Authorization.Entity
         [EntityProperty(NotNull = true)]
         public string DeviceVersion { get; set; } = default!;
 
-        [EntityProperty(NotNull = true)]
-        public string DeviceAddress { get; set; } = default!;
+        [EntityProperty(NotNull = false)]
+        public string? DeviceAddress { get; set; }
 
         [EntityProperty(NotNull = true)]
         public string DeviceIp { get; set; } = default!;

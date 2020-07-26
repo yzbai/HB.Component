@@ -25,7 +25,7 @@ namespace HB.Component.Authorization.Abstractions
         public string DeviceId { get; set; } = default!;
         public string DeviceType { get; set; } = default!;
         public string DeviceVersion { get; set; } = default!;
-        public string DeviceAddress { get; set; } = default!;
+        //public string DeviceAddress { get; set; } = default!;
         public string DeviceIp { get; set; } = default!;
 
         public string SignToWhere { get; set; } = default!;
