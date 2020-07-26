@@ -163,7 +163,7 @@ namespace HB.Component.Authorization
                     context.DeviceId,
                     clientType.ToString(),
                     context.DeviceVersion,
-                    context.DeviceAddress,
+                    //context.DeviceAddress,
                     context.DeviceIp,
                     context.RememberMe ? _signInOptions.RefreshTokenLongExpireTimeSpan : _signInOptions.RefreshTokenShortExpireTimeSpan,
                     transactionContext).ConfigureAwait(false);
@@ -228,7 +228,7 @@ namespace HB.Component.Authorization
                 throw new AuthorizationException(AuthorizationError.InvalideAccessToken, $"Context: {SerializeUtil.ToJson(context)}", ex);
             }
 
-            //TODO: 这里缺DeviceId验证
+            //TODO: 这里缺DeviceId验证. 放在了StartupUtil.cs中
 
             if (claimsPrincipal == null)
             {

@@ -31,7 +31,7 @@ namespace HB.Component.Authorization
         /// <returns></returns>
         /// <exception cref="HB.Framework.Common.ValidateErrorException"></exception>
         /// <exception cref="DatabaseException"></exception>
-        public async Task<SignInToken> CreateAsync(string userGuid, string deviceId, string deviceType, string deviceVersion, string deviceAddress, string ipAddress, TimeSpan expireTimeSpan, TransactionContext? transContext = null)
+        public async Task<SignInToken> CreateAsync(string userGuid, string deviceId, string deviceType, string deviceVersion, /*string deviceAddress,*/ string ipAddress, TimeSpan expireTimeSpan, TransactionContext? transContext = null)
         {
             SignInToken token = new SignInToken
             {
@@ -43,7 +43,7 @@ namespace HB.Component.Authorization
                 DeviceId = deviceId,
                 DeviceType = deviceType,
                 DeviceVersion = deviceVersion,
-                DeviceAddress = deviceAddress,
+                //DeviceAddress = deviceAddress,
                 DeviceIp = ipAddress,
                 ExpireAt = DateTimeOffset.UtcNow + expireTimeSpan
             };
