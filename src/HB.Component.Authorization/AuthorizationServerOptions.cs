@@ -35,13 +35,13 @@ namespace HB.Component.Authorization
     {
         public TimeSpan RefreshTokenLongExpireTimeSpan { get; set; } = TimeSpan.FromDays(365);
         public TimeSpan RefreshTokenShortExpireTimeSpan { get; set; } = TimeSpan.FromDays(1);
-        public TimeSpan AccessTokenExpireTimeSpan { get; set; } = TimeSpan.FromMinutes(30);
+        public TimeSpan AccessTokenExpireTimeSpan { get; set; } = TimeSpan.FromMinutes(5);
         public TimeSpan LockoutTimeSpan { get; set; } = TimeSpan.FromHours(6);
-        public bool RequiredMaxFailedCountCheck { get; set; } = false;
-        public bool RequiredLockoutCheck { get; set; } = false;
-        public bool RequireEmailConfirmed { get; set; } = false;
-        public bool RequireMobileConfirmed { get; set; } = false;
-        public bool RequireTwoFactorCheck { get; set; } = false;
+        public bool RequiredMaxFailedCountCheck { get; set; }
+        public bool RequiredLockoutCheck { get; set; }
+        public bool RequireEmailConfirmed { get; set; }
+        public bool RequireMobileConfirmed { get; set; }
+        public bool RequireTwoFactorCheck { get; set; }
         public long MaxFailedCount { get; set; } = 4;
         public double AccessFailedRecoveryDays { get; set; } = 1;
         public long LockoutAfterAccessFailedCount { get; set; } = 4;
