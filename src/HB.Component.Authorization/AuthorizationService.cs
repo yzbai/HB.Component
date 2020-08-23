@@ -268,7 +268,18 @@ namespace HB.Component.Authorization
                 {
                     //await _database.RollbackAsync(transactionContext).ConfigureAwait(false);
 
-                    throw new AuthorizationException(AuthorizationError.NoTokenInStore, $"Refresh token error. signInToken not saved in db. Context : {SerializeUtil.ToJson(context)}");
+                    throw new AuthorizationException(AuthorizationError.NoTokenInStore, $"Refresh token error. signInToken not saved in db. ");
+                }
+
+                //验证SignInToken过期问题
+
+                if (signInToken.ExpireAt < DateTimeOffset.UtcNow)
+                {
+                    await _database.RollbackAsync(transactionContext).ConfigureAwait(false);
+
+                    await BlackSignInTokenAsync(signInToken).ConfigureAwait(false);
+
+                    throw new AuthorizationException(AuthorizationError.RefreshTokenExpired, $"Refresh Token Expired.");
                 }
 
                 // User 信息变动验证
@@ -281,7 +292,7 @@ namespace HB.Component.Authorization
 
                     await BlackSignInTokenAsync(signInToken).ConfigureAwait(false);
 
-                    throw new AuthorizationException(AuthorizationError.UserSecurityStampChanged, $"Refresh token error. User SecurityStamp Changed. Context : {SerializeUtil.ToJson(context)}");
+                    throw new AuthorizationException(AuthorizationError.UserSecurityStampChanged, $"Refresh token error. User SecurityStamp Changed.");
                 }
 
                 // 更新SignInToken

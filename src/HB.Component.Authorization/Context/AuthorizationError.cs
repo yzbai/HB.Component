@@ -30,5 +30,6 @@ namespace HB.Component.Authorization
         UserSecurityStampChanged = 22,
         UpdateSignInTokenError = 23,
         InvalideDeviceId = 24,
+        RefreshTokenExpired = 25,
     }
 }
