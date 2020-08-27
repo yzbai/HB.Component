@@ -36,7 +36,7 @@ namespace HB.Component.Identity
                 new Claim(ClaimExtensionTypes.UserGuid, user.Guid),
                 new Claim(ClaimExtensionTypes.SecurityStamp, user.SecurityStamp),
                 //new Claim(ClaimExtensionTypes.UserId, user.Id.ToString(GlobalSettings.Culture)),
-                //new Claim(ClaimExtensionTypes.UserName, user.UserName??""),
+                new Claim(ClaimExtensionTypes.UserName, user.UserName??""),
                 //new Claim(ClaimExtensionTypes.MobilePhone, user.Mobile??""),
                 //new Claim(ClaimExtensionTypes.IsMobileConfirmed, user.MobileConfirmed.ToString(GlobalSettings.Culture))
             };

@@ -257,7 +257,7 @@ namespace HB.Component.Identity
 
             if (user != null)
             {
-                throw new IdentityException(IdentityError.MobileAlreadyTaken, $"userType:{typeof(TUser)}, mobile:{mobile}, userName:{userName}");
+                throw new IdentityException(IdentityError.MobileAlreadyTaken, $"userType:{typeof(TUser)}, mobile:{mobile}");
             }
 
             if (!string.IsNullOrEmpty(userName))

@@ -26,7 +26,7 @@ namespace HB.Component.Identity.Entity
         public string SecurityStamp { get; set; } = default!;
 
         /// <summary>
-        /// 唯一, 可为空，一旦不为空后不可修改
+        /// 唯一, 可为空，一旦不为空后不可修改,注意和NickName区分
         /// </summary>
         [UserName]
         [EntityProperty("用户名称", Length = 100, Unique = true)]
@@ -75,7 +75,7 @@ namespace HB.Component.Identity.Entity
         /// </summary>
         [EntityProperty("Two Factor")]
         public bool TwoFactorEnabled { get; set; }
-        
+
         /// <summary>
         /// 
         /// </summary>
