@@ -7,6 +7,7 @@ namespace HB.Component.Authorization.Entity
 {
     public class SignInToken : DatabaseEntity
     {
+        [Required]
         [UniqueGuidEntityProperty]
         public string Guid { get; set; } = default!;
 
