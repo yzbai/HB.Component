@@ -11,7 +11,7 @@ namespace HB.Component.Authorization
         NewUserCreateFailed = 3,
         NewUserCreateFailedMobileAlreadyTaken = 4,
         NewUserCreateFailedEmailAlreadyTaken = 5,
-        NewUserCreateFailedUserNameAlreadyTaken = 6,
+        NewUserCreateFailedLoginNameAlreadyTaken = 6,
         LockedOut = 7,
         TwoFactorRequired = 8,
         MobileNotConfirmed = 9,

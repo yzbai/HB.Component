@@ -26,11 +26,11 @@ namespace HB.Component.Identity.Entity
         public string SecurityStamp { get; set; } = default!;
 
         /// <summary>
-        /// 唯一, 可为空，一旦不为空后不可修改,注意和NickName区分
+        /// 唯一, 可为空，一旦不为空后不可修改,注意和NickName区分,这里实为LoginName
         /// </summary>
-        [UserName]
+        [LoginName]
         [EntityProperty("用户名称", Length = 100, Unique = true)]
-        public string? UserName { get; set; }
+        public string? LoginName { get; set; }
         /// <summary>
         /// 唯一
         /// </summary>

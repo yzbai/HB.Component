@@ -10,10 +10,10 @@ namespace HB.Component.Identity
     {
         Task<TUser?> ValidateSecurityStampAsync<TUser>(string userGuid, string? securityStamp) where TUser : User, new();
         Task<TUser?> GetUserByMobileAsync<TUser>(string mobile) where TUser : User, new();
-        Task<TUser?> GetUserByUserNameAsync<TUser>(string userName) where TUser : User, new();
+        Task<TUser?> GetUserByLoginNameAsync<TUser>(string loginName) where TUser : User, new();
 
         /// <exception cref="DatabaseException"></exception>
-        Task<TUser> CreateUserByMobileAsync<TUser>(string mobile, string? userName, string? password, bool mobileConfirmed) where TUser : User, new();
+        Task<TUser> CreateUserByMobileAsync<TUser>(string mobile, string? loginName, string? password, bool mobileConfirmed) where TUser : User, new();
 
         /// <exception cref="DatabaseException"></exception>
         Task SetLockoutAsync<TUser>(string userGuid, bool lockout, TimeSpan? lockoutTimeSpan = null) where TUser : User, new();
