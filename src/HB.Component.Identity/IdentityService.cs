@@ -28,17 +28,17 @@ namespace HB.Component.Identity
         /// CreateUserByMobileAsync
         /// </summary>
         /// <param name="mobile"></param>
-        /// <param name="userName"></param>
+        /// <param name="loginName"></param>
         /// <param name="password"></param>
         /// <param name="mobileConfirmed"></param>
         /// <returns></returns>
         /// <exception cref="DatabaseException"></exception>
-        public async Task<TUser> CreateUserByMobileAsync<TUser>(string mobile, string? userName, string? password, bool mobileConfirmed) where TUser : User, new()
+        public async Task<TUser> CreateUserByMobileAsync<TUser>(string mobile, string? loginName, string? password, bool mobileConfirmed) where TUser : User, new()
         {
             TransactionContext transactionContext = await _database.BeginTransactionAsync<TUser>(IsolationLevel.ReadCommitted).ConfigureAwait(false);
             try
             {
-                TUser user = await _userBiz.CreateByMobileAsync<TUser>(mobile, userName, password, mobileConfirmed, transactionContext).ConfigureAwait(false);
+                TUser user = await _userBiz.CreateByMobileAsync<TUser>(mobile, loginName, password, mobileConfirmed, transactionContext).ConfigureAwait(false);
 
                 await _database.CommitAsync(transactionContext).ConfigureAwait(false);
 
@@ -60,9 +60,9 @@ namespace HB.Component.Identity
             return _userBiz.GetByMobileAsync<TUser>(mobile);
         }
 
-        public Task<TUser?> GetUserByUserNameAsync<TUser>(string userName) where TUser : User, new()
+        public Task<TUser?> GetUserByLoginNameAsync<TUser>(string loginName) where TUser : User, new()
         {
-            return _userBiz.GetByUserNameAsync<TUser>(userName);
+            return _userBiz.GetByLoginNameAsync<TUser>(loginName);
         }
 
         /// <summary>

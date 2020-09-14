@@ -99,8 +99,8 @@ namespace HB.Component.Authorization
                 case SignInType.BySms:
                     ThrowIf.NullOrEmpty(context.Mobile, "SignInContext.Mobile");
                     break;
-                case SignInType.ByUserNameAndPassword:
-                    ThrowIf.NullOrEmpty(context.UserName, "SignInContext.UserName");
+                case SignInType.ByLoginNameAndPassword:
+                    ThrowIf.NullOrEmpty(context.LoginName, "SignInContext.LoginName");
                     ThrowIf.NullOrEmpty(context.Password, "SignInContext.Password");
                     break;
                 default:
@@ -114,7 +114,7 @@ namespace HB.Component.Authorization
                 //查询用户
                 TUser? user = context.SignInType switch
                 {
-                    SignInType.ByUserNameAndPassword => await _identityService.GetUserByUserNameAsync<TUser>(context.UserName!).ConfigureAwait(false),
+                    SignInType.ByLoginNameAndPassword => await _identityService.GetUserByLoginNameAsync<TUser>(context.LoginName!).ConfigureAwait(false),
                     SignInType.BySms => await _identityService.GetUserByMobileAsync<TUser>(context.Mobile!).ConfigureAwait(false),
                     SignInType.ByMobileAndPassword => await _identityService.GetUserByMobileAsync<TUser>(context.Mobile!).ConfigureAwait(false),
                     _ => null
@@ -125,7 +125,7 @@ namespace HB.Component.Authorization
 
                 if (user == null && context.SignInType == SignInType.BySms)
                 {
-                    user = await _identityService.CreateUserByMobileAsync<TUser>(context.Mobile!, context.UserName, context.Password, true).ConfigureAwait(false);
+                    user = await _identityService.CreateUserByMobileAsync<TUser>(context.Mobile!, context.LoginName, context.Password, true).ConfigureAwait(false);
 
                     newUserCreated = true;
                 }
@@ -136,7 +136,7 @@ namespace HB.Component.Authorization
                 }
 
                 //密码检查
-                if (context.SignInType == SignInType.ByMobileAndPassword || context.SignInType == SignInType.ByUserNameAndPassword)
+                if (context.SignInType == SignInType.ByMobileAndPassword || context.SignInType == SignInType.ByLoginNameAndPassword)
                 {
                     if (!PassowrdCheck(user, context.Password!))
                     {

@@ -11,13 +11,13 @@ namespace HB.Component.Identity.Abstractions
         /// <exception cref="HB.Component.Identity.IdentityException"></exception>
         /// <exception cref="ValidateErrorException"></exception>
         /// <exception cref="DatabaseException"></exception>
-        Task<TUser> CreateByMobileAsync<TUser>(string mobile, string? userName, string? password, bool mobileConfirmed, TransactionContext transContext) where TUser : User, new();
+        Task<TUser> CreateByMobileAsync<TUser>(string mobile, string? loginName, string? password, bool mobileConfirmed, TransactionContext transContext) where TUser : User, new();
 
         Task<IEnumerable<TUser>> GetAsync<TUser>(IEnumerable<string> userGuids, TransactionContext? transContext = null) where TUser : User, new();
         Task<TUser?> GetAsync<TUser>(string userGuid, TransactionContext? transContext = null) where TUser : User, new();
         Task<TUser?> GetByEmailAsync<TUser>(string email, TransactionContext? transContext = null) where TUser : User, new();
         Task<TUser?> GetByMobileAsync<TUser>(string mobile, TransactionContext? transContext = null) where TUser : User, new();
-        Task<TUser?> GetByUserNameAsync<TUser>(string userName, TransactionContext? transContext = null) where TUser : User, new();
+        Task<TUser?> GetByLoginNameAsync<TUser>(string loginName, TransactionContext? transContext = null) where TUser : User, new();
 
         /// <exception cref="HB.Component.Identity.IdentityException"></exception>
         /// <exception cref="ValidateErrorException"></exception>
@@ -38,7 +38,7 @@ namespace HB.Component.Identity.Abstractions
         /// <exception cref="HB.Component.Identity.IdentityException"></exception>
         /// <exception cref="ValidateErrorException"></exception>
         /// <exception cref="DatabaseException"></exception>
-        Task SetUserNameAsync<TUser>(string userGuid, string userName, TransactionContext transContext) where TUser : User, new();
+        Task SetLoginNameAsync<TUser>(string userGuid, string loginName, TransactionContext transContext) where TUser : User, new();
 
 
         Task<TUser?> ValidateSecurityStampAsync<TUser>(string userGuid, string? securityStamp, TransactionContext? transContext = null) where TUser : User, new();

@@ -16,7 +16,7 @@ namespace HB.Component.Identity
         AlreadyExists = 3,
         ArgumentError = 4,
         MobileAlreadyTaken = 5,
-        UserNameAlreadyTaken = 6,
+        LoginNameAlreadyTaken = 6,
         EmailAlreadyTaken = 7,
         Thrown = 8
     }

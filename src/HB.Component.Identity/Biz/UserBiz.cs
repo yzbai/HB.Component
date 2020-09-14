@@ -47,9 +47,9 @@ namespace HB.Component.Identity
             return _db.ScalarAsync<TUser>(u => u.Mobile == mobile, transContext);
         }
 
-        public Task<TUser?> GetByUserNameAsync<TUser>(string userName, TransactionContext? transContext = null) where TUser : User, new()
+        public Task<TUser?> GetByLoginNameAsync<TUser>(string loginName, TransactionContext? transContext = null) where TUser : User, new()
         {
-            return _db.ScalarAsync<TUser>(u => u.UserName == userName, transContext);
+            return _db.ScalarAsync<TUser>(u => u.LoginName == loginName, transContext);
         }
 
         public Task<TUser?> GetByEmailAsync<TUser>(string email, TransactionContext? transContext = null) where TUser : User, new()
@@ -126,18 +126,18 @@ namespace HB.Component.Identity
         }
 
         /// <summary>
-        /// SetUserNameAsync
+        /// SetLoginNameAsync
         /// </summary>
         /// <param name="userGuid"></param>
-        /// <param name="userName"></param>
+        /// <param name="loginName"></param>
         /// <param name="transContext"></param>
         /// <returns></returns>
         /// <exception cref="HB.Component.Identity.IdentityException"></exception>
         /// <exception cref="ValidateErrorException"></exception>
         /// <exception cref="DatabaseException"></exception>
-        public async Task SetUserNameAsync<TUser>(string userGuid, string userName, TransactionContext transContext) where TUser : User, new()
+        public async Task SetLoginNameAsync<TUser>(string userGuid, string loginName, TransactionContext transContext) where TUser : User, new()
         {
-            ThrowIf.NullOrNotUserName(userName, nameof(userName));
+            ThrowIf.NullOrNotLoginName(loginName, nameof(loginName));
 
             TUser? user = await GetAsync<TUser>(userGuid, transContext).ConfigureAwait(false);
 
@@ -146,12 +146,12 @@ namespace HB.Component.Identity
                 throw new IdentityException(IdentityError.NotFound, $"userGuid:{userGuid}");
             }
 
-            if (!userName.Equals(user.UserName, GlobalSettings.Comparison) && 0 != await _db.CountAsync<TUser>(u => u.UserName == userName, transContext).ConfigureAwait(false))
+            if (!loginName.Equals(user.LoginName, GlobalSettings.Comparison) && 0 != await _db.CountAsync<TUser>(u => u.LoginName == loginName, transContext).ConfigureAwait(false))
             {
-                throw new IdentityException(IdentityError.AlreadyExists, $"userGuid:{userGuid}, userName:{userName}");
+                throw new IdentityException(IdentityError.AlreadyExists, $"userGuid:{userGuid}, loginName:{loginName}");
             }
 
-            user.UserName = userName;
+            user.LoginName = loginName;
 
             await ChangeSecurityStampAsync(user).ConfigureAwait(false);
 
@@ -208,10 +208,10 @@ namespace HB.Component.Identity
         /// InitNew
         /// </summary>
         /// <param name="mobile"></param>
-        /// <param name="userName"></param>
+        /// <param name="loginName"></param>
         /// <param name="password"></param>
         /// <returns></returns>
-        private static TUser InitNew<TUser>(string mobile, string? userName, string? password) where TUser : User, new()
+        private static TUser InitNew<TUser>(string mobile, string? loginName, string? password) where TUser : User, new()
         {
             TUser user = new TUser
             {
@@ -221,7 +221,7 @@ namespace HB.Component.Identity
                 SecurityStamp = SecurityUtil.CreateUniqueToken(),
                 IsActivated = true,
                 AccessFailedCount = 0,
-                UserName = userName,
+                LoginName = loginName,
                 TwoFactorEnabled = false,
                 //ImageUrl = string.Empty,
             };
@@ -238,7 +238,7 @@ namespace HB.Component.Identity
         /// CreateByMobileAsync
         /// </summary>
         /// <param name="mobile"></param>
-        /// <param name="userName"></param>
+        /// <param name="loginName"></param>
         /// <param name="password"></param>
         /// <param name="mobileConfirmed"></param>
         /// <param name="transContext"></param>
@@ -246,7 +246,7 @@ namespace HB.Component.Identity
         /// <exception cref="HB.Component.Identity.IdentityException"></exception>
         /// <exception cref="ValidateErrorException"></exception>
         /// <exception cref="DatabaseException"></exception>
-        public async Task<TUser> CreateByMobileAsync<TUser>(string mobile, string? userName, string? password, bool mobileConfirmed, TransactionContext transContext) where TUser : User, new()
+        public async Task<TUser> CreateByMobileAsync<TUser>(string mobile, string? loginName, string? password, bool mobileConfirmed, TransactionContext transContext) where TUser : User, new()
         {
             ThrowIf.NullOrNotMobile(mobile, nameof(mobile));
             ThrowIf.NotPassword(password, nameof(password), true);
@@ -260,19 +260,19 @@ namespace HB.Component.Identity
                 throw new IdentityException(IdentityError.MobileAlreadyTaken, $"userType:{typeof(TUser)}, mobile:{mobile}");
             }
 
-            if (!string.IsNullOrEmpty(userName))
+            if (!string.IsNullOrEmpty(loginName))
             {
-                TUser? tmpUser = await GetByUserNameAsync<TUser>(userName, transContext).ConfigureAwait(false);
+                TUser? tmpUser = await GetByLoginNameAsync<TUser>(loginName, transContext).ConfigureAwait(false);
 
                 if (tmpUser != null)
                 {
-                    throw new IdentityException(IdentityError.UserNameAlreadyTaken, $"userType:{typeof(TUser)}, mobile:{mobile}, userName:{userName}");
+                    throw new IdentityException(IdentityError.LoginNameAlreadyTaken, $"userType:{typeof(TUser)}, mobile:{mobile}, loginName:{loginName}");
                 }
             }
 
             #endregion
 
-            user = InitNew<TUser>(mobile, userName, password);
+            user = InitNew<TUser>(mobile, loginName, password);
 
             user.MobileConfirmed = mobileConfirmed;
 
