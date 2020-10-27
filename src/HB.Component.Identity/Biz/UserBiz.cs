@@ -194,7 +194,7 @@ namespace HB.Component.Identity
             if (_identityOptions.Events != null)
             {
                 IdentitySecurityStampChangeContext context = new IdentitySecurityStampChangeContext(user.Guid);
-                return _identityOptions.Events.SecurityStampChanged(context);
+                return _identityOptions.Events.SecurityStampChangedAsync(context);
             }
 
             return Task.CompletedTask;
