@@ -7,48 +7,29 @@ using System.Text;
 
 namespace HB.Component.Authorization
 {
-    public class AuthorizationException : FrameworkException
+    public class AuthorizationException : ServerException
     {
-        private IDictionary? _data;
-
-        public override FrameworkExceptionType ExceptionType { get => FrameworkExceptionType.Authorization; }
-
-        public AuthorizationError Error { get; private set; }
-
-        public string? Operation { get; private set; }
-
-        public AuthorizationException(AuthorizationError error, string message, Exception? innerException= null, [CallerMemberName]string operation="")
-            :this(message, innerException)
+        public AuthorizationException(string? message) : base(message)
         {
-            Error = error;
-            Operation = operation;
         }
 
-        public override IDictionary Data
+        public AuthorizationException(string? message, Exception? innerException) : base(message, innerException)
         {
-            get
-            {
-                if (_data == null)
-                {
-                    _data = base.Data;
-                }
-
-                _data["SignInError"] = Error.ToString();
-                _data["Operation"] = Operation;
-
-                return _data;
-            }
         }
 
         public AuthorizationException()
         {
         }
 
-        public AuthorizationException(string? message) : base(message)
+        public AuthorizationException(ServerErrorCode errorCode, string? message) : base(errorCode, message)
         {
         }
 
-        public AuthorizationException(string? message, Exception? innerException) : base(message, innerException)
+        public AuthorizationException(ServerErrorCode errorCode, string? message, Exception? innerException) : base(errorCode, message, innerException)
+        {
+        }
+
+        public AuthorizationException(ServerErrorCode errorCode) : base(errorCode)
         {
         }
     }
