@@ -83,7 +83,7 @@ namespace HB.Component.Identity
 
             if (user == null)
             {
-                throw new IdentityException(IdentityError.NotFound, $"userGuid:{userGuid}, lockout:{lockout}, lockoutTimeSpan:{lockoutTimeSpan?.TotalSeconds}");
+                throw new IdentityException(ServerErrorCode.IdentityNotFound, $"userGuid:{userGuid}, lockout:{lockout}, lockoutTimeSpan:{lockoutTimeSpan?.TotalSeconds}");
             }
 
             user.LockoutEnabled = lockout;
@@ -112,7 +112,7 @@ namespace HB.Component.Identity
 
             if (user == null)
             {
-                throw new IdentityException(IdentityError.NotFound, $"userGuid:{userGuid}, count:{count}");
+                throw new IdentityException(ServerErrorCode.IdentityNotFound, $"userGuid:{userGuid}, count:{count}");
             }
 
             if (count != 0)
@@ -143,12 +143,12 @@ namespace HB.Component.Identity
 
             if (user == null)
             {
-                throw new IdentityException(IdentityError.NotFound, $"userGuid:{userGuid}");
+                throw new IdentityException(ServerErrorCode.IdentityNotFound, $"userGuid:{userGuid}");
             }
 
             if (!loginName.Equals(user.LoginName, GlobalSettings.Comparison) && 0 != await _db.CountAsync<TUser>(u => u.LoginName == loginName, transContext).ConfigureAwait(false))
             {
-                throw new IdentityException(IdentityError.AlreadyExists, $"userGuid:{userGuid}, loginName:{loginName}");
+                throw new IdentityException(ServerErrorCode.IdentityAlreadyExists, $"userGuid:{userGuid}, loginName:{loginName}");
             }
 
             user.LoginName = loginName;
@@ -177,7 +177,7 @@ namespace HB.Component.Identity
 
             if (user == null)
             {
-                throw new IdentityException(IdentityError.NotFound, $"mobile:{mobile}");
+                throw new IdentityException(ServerErrorCode.IdentityNotFound, $"mobile:{mobile}");
             }
 
             user.PasswordHash = SecurityUtil.EncryptPwdWithSalt(newPassword, user.Guid);
@@ -257,7 +257,7 @@ namespace HB.Component.Identity
 
             if (user != null)
             {
-                throw new IdentityException(IdentityError.MobileAlreadyTaken, $"userType:{typeof(TUser)}, mobile:{mobile}");
+                throw new IdentityException(ServerErrorCode.IdentityMobileAlreadyTaken, $"userType:{typeof(TUser)}, mobile:{mobile}");
             }
 
             if (!string.IsNullOrEmpty(loginName))
@@ -266,7 +266,7 @@ namespace HB.Component.Identity
 
                 if (tmpUser != null)
                 {
-                    throw new IdentityException(IdentityError.LoginNameAlreadyTaken, $"userType:{typeof(TUser)}, mobile:{mobile}, loginName:{loginName}");
+                    throw new IdentityException(ServerErrorCode.IdentityLoginNameAlreadyTaken, $"userType:{typeof(TUser)}, mobile:{mobile}, loginName:{loginName}");
                 }
             }
 

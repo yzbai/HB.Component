@@ -6,47 +6,29 @@ using System.Text;
 
 namespace HB.Component.Identity
 {
-    public class IdentityException : FrameworkException
+    public class IdentityException : ServerException
     {
-        private IDictionary? _data;
-
-        public override FrameworkExceptionType ExceptionType { get => FrameworkExceptionType.Identity; }
-
-        public IdentityError Error { get; private set; }
-
-        public string? Operation { get; private set; }
-
-        public IdentityException(IdentityError error, string message, Exception? innerException= null,  [CallerMemberName]string operation = "") : this(message, innerException)
+        public IdentityException(string? message) : base(message)
         {
-            Error = error;
-            Operation = operation;
         }
 
-        public override IDictionary Data
+        public IdentityException(string? message, Exception? innerException) : base(message, innerException)
         {
-            get
-            {
-                if (_data == null)
-                {
-                    _data = base.Data;
-                }
-
-                _data["IdentityError"] = Error.ToString();
-                _data["Operation"] = Operation;
-
-                return _data;
-            }
         }
 
         public IdentityException()
         {
         }
 
-        public IdentityException(string? message) : base(message)
+        public IdentityException(ServerErrorCode errorCode, string? message) : base(errorCode, message)
         {
         }
 
-        public IdentityException(string? message, Exception? innerException) : base(message, innerException)
+        public IdentityException(ServerErrorCode errorCode, string? message, Exception? innerException) : base(errorCode, message, innerException)
+        {
+        }
+
+        public IdentityException(ServerErrorCode errorCode) : base(errorCode)
         {
         }
     }

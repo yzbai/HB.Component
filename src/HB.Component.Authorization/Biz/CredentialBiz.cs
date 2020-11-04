@@ -16,7 +16,6 @@ namespace HB.Component.Authorization
         private readonly AuthorizationOptions _options;
         private readonly SigningCredentials _signingCredentials;
         private readonly JsonWebKeySet _jsonWebKeySet;
-        private readonly ILogger _logger;
 
         /// <summary>
         /// 
@@ -25,16 +24,14 @@ namespace HB.Component.Authorization
         /// <param name="logger"></param>
         /// <exception cref="FileNotFoundException">证书文件不存在</exception>
         /// <exception cref="ArgumentException">Json无法解析</exception>
-        public CredentialBiz(IOptions<AuthorizationOptions> options, ILogger<CredentialBiz> logger)
+        public CredentialBiz(IOptions<AuthorizationOptions> options)
         {
             _options = options.Value;
-            _logger = logger;
 
             X509Certificate2? cert = CertificateUtil.GetBySubject(_options.CertificateSubject);
 
             if (cert == null)
             {
-                _logger.LogCritical($"找不到证书 Subject:{_options.CertificateSubject}");
                 throw new FileNotFoundException(_options.CertificateSubject);
             }
 
