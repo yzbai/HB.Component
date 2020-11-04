@@ -7,7 +7,7 @@ using System.Text;
 
 namespace HB.Component.Authorization
 {
-    public class AuthorizationException : ServerException
+    public class AuthorizationException : FrameworkException
     {
         public AuthorizationException(string? message) : base(message)
         {
@@ -21,15 +21,15 @@ namespace HB.Component.Authorization
         {
         }
 
-        public AuthorizationException(ServerErrorCode errorCode, string? message) : base(errorCode, message)
+        public AuthorizationException(ErrorCode errorCode, string? message) : base(errorCode, message)
         {
         }
 
-        public AuthorizationException(ServerErrorCode errorCode, string? message, Exception? innerException) : base(errorCode, message, innerException)
+        public AuthorizationException(ErrorCode errorCode, string? message, Exception? innerException) : base(errorCode, message, innerException)
         {
         }
 
-        public AuthorizationException(ServerErrorCode errorCode) : base(errorCode)
+        public AuthorizationException(ErrorCode errorCode) : base(errorCode)
         {
         }
     }
