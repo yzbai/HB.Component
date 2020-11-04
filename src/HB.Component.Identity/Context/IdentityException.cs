@@ -6,7 +6,7 @@ using System.Text;
 
 namespace HB.Component.Identity
 {
-    public class IdentityException : ServerException
+    public class IdentityException : FrameworkException
     {
         public IdentityException(string? message) : base(message)
         {
@@ -20,15 +20,15 @@ namespace HB.Component.Identity
         {
         }
 
-        public IdentityException(ServerErrorCode errorCode, string? message) : base(errorCode, message)
+        public IdentityException(ErrorCode errorCode, string? message) : base(errorCode, message)
         {
         }
 
-        public IdentityException(ServerErrorCode errorCode, string? message, Exception? innerException) : base(errorCode, message, innerException)
+        public IdentityException(ErrorCode errorCode, string? message, Exception? innerException) : base(errorCode, message, innerException)
         {
         }
 
-        public IdentityException(ServerErrorCode errorCode) : base(errorCode)
+        public IdentityException(ErrorCode errorCode) : base(errorCode)
         {
         }
     }

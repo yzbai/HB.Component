@@ -132,7 +132,7 @@ namespace HB.Component.Authorization
 
                 if (user == null)
                 {
-                    throw new AuthorizationException(ServerErrorCode.AuthorizationNotFound, $"SignInContext:{SerializeUtil.ToJson(context)}");
+                    throw new AuthorizationException(ErrorCode.AuthorizationNotFound, $"SignInContext:{SerializeUtil.ToJson(context)}");
                 }
 
                 //密码检查
@@ -142,7 +142,7 @@ namespace HB.Component.Authorization
                     {
                         await OnPasswordCheckFailedAsync(user).ConfigureAwait(false);
 
-                        throw new AuthorizationException(ServerErrorCode.AuthorizationPasswordWrong, $"SignInContext:{SerializeUtil.ToJson(context)}");
+                        throw new AuthorizationException(ErrorCode.AuthorizationPasswordWrong, $"SignInContext:{SerializeUtil.ToJson(context)}");
                     }
                 }
 
@@ -212,7 +212,7 @@ namespace HB.Component.Authorization
 
             if (!(await _frequencyChecker.CheckAsync(nameof(RefreshAccessTokenAsync), context.DeviceId, _options.RefreshIntervalTimeSpan).ConfigureAwait(false)))
             {
-                throw new AuthorizationException(ServerErrorCode.AuthorizationTooFrequent, $"Context:{SerializeUtil.ToJson(context)}");
+                throw new AuthorizationException(ErrorCode.AuthorizationTooFrequent, $"Context:{SerializeUtil.ToJson(context)}");
             }
 
             //AccessToken, Claims 验证
@@ -225,7 +225,7 @@ namespace HB.Component.Authorization
             }
             catch (Exception ex)
             {
-                throw new AuthorizationException(ServerErrorCode.AuthorizationInvalideAccessToken, $"Context: {SerializeUtil.ToJson(context)}", ex);
+                throw new AuthorizationException(ErrorCode.AuthorizationInvalideAccessToken, $"Context: {SerializeUtil.ToJson(context)}", ex);
             }
 
             //TODO: 这里缺DeviceId验证. 放在了StartupUtil.cs中
@@ -233,19 +233,19 @@ namespace HB.Component.Authorization
             if (claimsPrincipal == null)
             {
                 //TODO: Black concern SigninToken by RefreshToken
-                throw new AuthorizationException(ServerErrorCode.AuthorizationInvalideAccessToken, $"Context: {SerializeUtil.ToJson(context)}");
+                throw new AuthorizationException(ErrorCode.AuthorizationInvalideAccessToken, $"Context: {SerializeUtil.ToJson(context)}");
             }
 
             if (claimsPrincipal.GetDeviceId() != context.DeviceId)
             {
-                throw new AuthorizationException(ServerErrorCode.AuthorizationInvalideDeviceId, $"Context: {SerializeUtil.ToJson(context)}");
+                throw new AuthorizationException(ErrorCode.AuthorizationInvalideDeviceId, $"Context: {SerializeUtil.ToJson(context)}");
             }
 
             string? userGuid = claimsPrincipal.GetUserGuid();
 
             if (string.IsNullOrEmpty(userGuid))
             {
-                throw new AuthorizationException(ServerErrorCode.AuthorizationInvalideUserGuid, $"Context: {SerializeUtil.ToJson(context)}");
+                throw new AuthorizationException(ErrorCode.AuthorizationInvalideUserGuid, $"Context: {SerializeUtil.ToJson(context)}");
             }
 
 
@@ -268,7 +268,7 @@ namespace HB.Component.Authorization
                 {
                     //await _database.RollbackAsync(transactionContext).ConfigureAwait(false);
 
-                    throw new AuthorizationException(ServerErrorCode.AuthorizationNoTokenInStore, $"Refresh token error. signInToken not saved in db. ");
+                    throw new AuthorizationException(ErrorCode.AuthorizationNoTokenInStore, $"Refresh token error. signInToken not saved in db. ");
                 }
 
                 //验证SignInToken过期问题
@@ -279,7 +279,7 @@ namespace HB.Component.Authorization
 
                     await BlackSignInTokenAsync(signInToken).ConfigureAwait(false);
 
-                    throw new AuthorizationException(ServerErrorCode.AuthorizationRefreshTokenExpired, $"Refresh Token Expired.");
+                    throw new AuthorizationException(ErrorCode.AuthorizationRefreshTokenExpired, $"Refresh Token Expired.");
                 }
 
                 // User 信息变动验证
@@ -292,7 +292,7 @@ namespace HB.Component.Authorization
 
                     await BlackSignInTokenAsync(signInToken).ConfigureAwait(false);
 
-                    throw new AuthorizationException(ServerErrorCode.AuthorizationUserSecurityStampChanged, $"Refresh token error. User SecurityStamp Changed.");
+                    throw new AuthorizationException(ErrorCode.AuthorizationUserSecurityStampChanged, $"Refresh token error. User SecurityStamp Changed.");
                 }
 
                 // 更新SignInToken
@@ -327,19 +327,19 @@ namespace HB.Component.Authorization
             //2, 手机验证
             if (_signInOptions.RequireMobileConfirmed && !user.MobileConfirmed)
             {
-                throw new AuthorizationException(ServerErrorCode.AuthorizationMobileNotConfirmed, $"user:{SerializeUtil.ToJson(user)}");
+                throw new AuthorizationException(ErrorCode.AuthorizationMobileNotConfirmed, $"user:{SerializeUtil.ToJson(user)}");
             }
 
             //3, 邮件验证
             if (_signInOptions.RequireEmailConfirmed && !user.EmailConfirmed)
             {
-                throw new AuthorizationException(ServerErrorCode.AuthorizationEmailNotConfirmed, $"user:{SerializeUtil.ToJson(user)}");
+                throw new AuthorizationException(ErrorCode.AuthorizationEmailNotConfirmed, $"user:{SerializeUtil.ToJson(user)}");
             }
 
             //4, Lockout 检查
             if (_signInOptions.RequiredLockoutCheck && user.LockoutEnabled && user.LockoutEndDate > DateTimeOffset.UtcNow)
             {
-                throw new AuthorizationException(ServerErrorCode.AuthorizationLockedOut, $"user:{SerializeUtil.ToJson(user)}");
+                throw new AuthorizationException(ErrorCode.AuthorizationLockedOut, $"user:{SerializeUtil.ToJson(user)}");
             }
 
             //5, 一天内,最大失败数检测
@@ -349,7 +349,7 @@ namespace HB.Component.Authorization
                 {
                     if (user.AccessFailedCount > _signInOptions.MaxFailedCount)
                     {
-                        throw new AuthorizationException(ServerErrorCode.AuthorizationOverMaxFailedCount, $"user:{SerializeUtil.ToJson(user)}");
+                        throw new AuthorizationException(ErrorCode.AuthorizationOverMaxFailedCount, $"user:{SerializeUtil.ToJson(user)}");
                     }
                 }
             }
