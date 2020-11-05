@@ -10,6 +10,6 @@ namespace HB.Component.Identity
         public IdentityOptions Value { get { return this; } }
 
 
-        public IdentityEvents Events { get; set; }
+        public IdentityEvents Events { get; set; } = new IdentityEvents();
     }
 }

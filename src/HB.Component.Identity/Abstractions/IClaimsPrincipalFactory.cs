@@ -8,6 +8,9 @@ namespace HB.Component.Identity.Abstractions
 {
     internal interface IClaimsPrincipalFactory
     {
-        Task<IList<Claim>> CreateClaimsAsync(User user, TransactionContext transContext);
+        Task<IEnumerable<Claim>> CreateClaimsAsync<TUserClaim, TRole, TRoleOfUser>(User user, TransactionContext transContext)
+            where TUserClaim : UserClaim, new()
+            where TRole : Role, new()
+            where TRoleOfUser : RoleOfUser, new();
     }
 }

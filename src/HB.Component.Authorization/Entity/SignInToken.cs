@@ -7,45 +7,46 @@ namespace HB.Component.Authorization.Entity
 {
     public class SignInToken : DatabaseEntity
     {
+        [Required]
         [UniqueGuidEntityProperty]
-        public string Guid { get; set; }
+        public string Guid { get; set; } = default!;
 
         [ForeignKey(typeof(User))]
-        [GuidEntityProperty]
-        public string UserGuid { get; set; }
+        [GuidEntityProperty(NotNull = true)]
+        public string UserGuid { get; set; } = default!;
 
         [Required]
-        [EntityProperty("RefreshToken")]
-        public string RefreshToken { get; set; }
+        [EntityProperty(NotNull = true)]
+        public string RefreshToken { get; set; } = default!;
 
-        [EntityProperty("ExpireAt")]
+        [EntityProperty]
         public DateTimeOffset? ExpireAt { get; set; }
 
-        [EntityProperty("RefreshCount")]
+        [EntityProperty]
         public long RefreshCount { get; set; } = 0;
 
-        [EntityProperty("Blacked")]
+        [EntityProperty]
         public bool Blacked { get; set; } = false;
 
 
-        #region Client
+        #region Device
 
         [Required]
-        [EntityProperty("ClientId")]
-        public string ClientId { get; set; }
+        [EntityProperty(NotNull = true)]
+        public string DeviceId { get; set; } = default!;
 
         [Required]
-        [EntityProperty("ClientType")]
-        public string ClientType { get; set; }
+        [EntityProperty(NotNull = true)]
+        public string DeviceType { get; set; } = default!;
 
-        [EntityProperty("ClientVersion")]
-        public string ClientVersion { get; set; }
+        [EntityProperty(NotNull = true)]
+        public string DeviceVersion { get; set; } = default!;
 
-        [EntityProperty("Address")]
-        public string ClientAddress { get; set; }
+        [EntityProperty(NotNull = false)]
+        public string? DeviceAddress { get; set; }
 
-        [EntityProperty("Client IP")]
-        public string ClientIp { get; set; }
+        [EntityProperty(NotNull = true)]
+        public string DeviceIp { get; set; } = default!;
 
         #endregion
     }
