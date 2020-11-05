@@ -3,12 +3,12 @@ using System;
 
 namespace HB.Component.Identity.Entity
 {
-    public abstract class UserClaim : DatabaseEntity
+    public abstract class IdentityUserClaim : DatabaseEntity
     {
         [UniqueGuidEntityProperty]
         public string Guid { get; set; } = default!;
 
-        [ForeignKey(typeof(User))]
+        [ForeignKey(typeof(IdenityUser))]
         [GuidEntityProperty(NotNull = true)]
         public string UserGuid { get; set; } = default!;
 

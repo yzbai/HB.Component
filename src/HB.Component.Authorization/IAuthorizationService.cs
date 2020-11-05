@@ -11,19 +11,19 @@ namespace HB.Component.Authorization
         /// <exception cref="HB.Framework.Common.ValidateErrorException"></exception>
         /// <exception cref="HB.Component.Authorization.AuthorizationException"></exception>
         Task<string> RefreshAccessTokenAsync<TUser, TUserClaim, TRole, TRoleOfUser>(RefreshContext context)
-            where TUser : User, new()
-            where TUserClaim : UserClaim, new()
-            where TRole : Role, new()
-            where TRoleOfUser : RoleOfUser, new();
+            where TUser : IdenityUser, new()
+            where TUserClaim : IdentityUserClaim, new()
+            where TRole : IdentityRole, new()
+            where TRoleOfUser : IdentityRoleOfUser, new();
 
         /// <exception cref="HB.Framework.Common.ValidateErrorException"></exception>
         /// <exception cref="HB.Component.Authorization.AuthorizationException"></exception>
         /// <exception cref="DatabaseException"></exception>
         Task<SignInResult> SignInAsync<TUser, TUserClaim, TRole, TRoleOfUser>(SignInContext context)
-            where TUser : User, new()
-            where TUserClaim : UserClaim, new()
-            where TRole : Role, new()
-            where TRoleOfUser : RoleOfUser, new();
+            where TUser : IdenityUser, new()
+            where TUserClaim : IdentityUserClaim, new()
+            where TRole : IdentityRole, new()
+            where TRoleOfUser : IdentityRoleOfUser, new();
 
         /// <summary>
         /// 

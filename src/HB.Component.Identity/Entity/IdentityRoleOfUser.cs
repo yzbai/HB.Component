@@ -7,18 +7,18 @@ namespace HB.Component.Identity.Entity
     /// <summary>
     /// 用户-角色 关系 实体
     /// </summary>
-    public abstract class RoleOfUser : DatabaseEntity
+    public abstract class IdentityRoleOfUser : DatabaseEntity
     {
         [UniqueGuidEntityProperty]
         public string Guid { get; set; } = default!;
 
-        [ForeignKey(typeof(User))]
+        [ForeignKey(typeof(IdenityUser))]
         [GuidEntityProperty(NotNull = true)]
         [DisallowNull, NotNull]
         public string UserGuid { get; set; } = default!;
 
 
-        [ForeignKey(typeof(Role))]
+        [ForeignKey(typeof(IdentityRole))]
         [GuidEntityProperty(NotNull = true)]
         public string RoleGuid { get; set; } = default!;
     }

@@ -10,7 +10,7 @@ namespace HB.Component.Authorization.Entity
         [UniqueGuidEntityProperty]
         public string Guid { get; set; } = default!;
 
-        [ForeignKey(typeof(User))]
+        [ForeignKey(typeof(IdenityUser))]
         [GuidEntityProperty(NotNull = true)]
         public string UserGuid { get; set; } = default!;
 
