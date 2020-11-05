@@ -4,6 +4,6 @@
     {
         BySms,
         ByMobileAndPassword,
-        ByUserNameAndPassword
+        ByLoginNameAndPassword
     }
 }

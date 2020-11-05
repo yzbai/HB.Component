@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using System.Collections;
 using Microsoft.IdentityModel.Tokens;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace HB.Component.Authorization
 {
@@ -17,11 +18,11 @@ namespace HB.Component.Authorization
 
         public bool NeedAudienceToBeChecked { get; set; } = true;
 
-        public string CertificateSubject { get; set; }
+        [DisallowNull, NotNull]
+        public string? CertificateSubject { get; set; }
 
-        public OpenIdConnectConfiguration OpenIdConnectConfiguration { get; set; }
+        public OpenIdConnectConfiguration OpenIdConnectConfiguration { get; set; } = new OpenIdConnectConfiguration();
 
-        //public JsonWebKeySet JsonWebKeys { get; set; }
 
         /// <summary>
         /// 连续两次请求Refresh最小时间间隔
@@ -34,13 +35,13 @@ namespace HB.Component.Authorization
     {
         public TimeSpan RefreshTokenLongExpireTimeSpan { get; set; } = TimeSpan.FromDays(365);
         public TimeSpan RefreshTokenShortExpireTimeSpan { get; set; } = TimeSpan.FromDays(1);
-        public TimeSpan AccessTokenExpireTimeSpan { get; set; } = TimeSpan.FromMinutes(30);
+        public TimeSpan AccessTokenExpireTimeSpan { get; set; } = TimeSpan.FromMinutes(5);
         public TimeSpan LockoutTimeSpan { get; set; } = TimeSpan.FromHours(6);
-        public bool RequiredMaxFailedCountCheck { get; set; } = false;
-        public bool RequiredLockoutCheck { get; set; } = false;
-        public bool RequireEmailConfirmed { get; set; } = false;
-        public bool RequireMobileConfirmed { get; set; } = false;
-        public bool RequireTwoFactorCheck { get; set; } = false;
+        public bool RequiredMaxFailedCountCheck { get; set; }
+        public bool RequiredLockoutCheck { get; set; }
+        public bool RequireEmailConfirmed { get; set; }
+        public bool RequireMobileConfirmed { get; set; }
+        public bool RequireTwoFactorCheck { get; set; }
         public long MaxFailedCount { get; set; } = 4;
         public double AccessFailedRecoveryDays { get; set; } = 1;
         public long LockoutAfterAccessFailedCount { get; set; } = 4;

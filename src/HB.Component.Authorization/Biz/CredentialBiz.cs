@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.IdentityModel.Tokens;
-using System.Security.Cryptography.X509Certificates;
-using Microsoft.Extensions.Options;
-using System.IO;
-using HB.Framework.Common;
-using HB.Component.Authorization.Abstractions;
-using System.Security.Cryptography;
-using System.Security;
+﻿using HB.Component.Authorization.Abstractions;
+using HB.Component.Authorization.Properties;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 
 namespace HB.Component.Authorization
 {
@@ -18,26 +16,30 @@ namespace HB.Component.Authorization
         private readonly AuthorizationOptions _options;
         private readonly SigningCredentials _signingCredentials;
         private readonly JsonWebKeySet _jsonWebKeySet;
-        private readonly ILogger _logger;
 
-        public CredentialBiz(IOptions<AuthorizationOptions> options, ILogger<CredentialBiz> logger)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="options"></param>
+        /// <param name="logger"></param>
+        /// <exception cref="FileNotFoundException">证书文件不存在</exception>
+        /// <exception cref="ArgumentException">Json无法解析</exception>
+        public CredentialBiz(IOptions<AuthorizationOptions> options)
         {
             _options = options.Value;
-            _logger = logger;
 
-            X509Certificate2 cert = CertificateUtil.GetBySubject(_options.CertificateSubject);
+            X509Certificate2? cert = CertificateUtil.GetBySubject(_options.CertificateSubject);
 
             if (cert == null)
             {
-                logger.LogCritical($"找不到证书 Subject:{_options.CertificateSubject}");
                 throw new FileNotFoundException(_options.CertificateSubject);
             }
 
             X509SecurityKey securityKey = new X509SecurityKey(cert);
 
             _signingCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.RsaSha256Signature);
-                        
-            RSA publicKey = securityKey.PublicKey as RSA;
+
+            RSA publicKey = (RSA)securityKey.PublicKey;
             RSAParameters parameters = publicKey.ExportParameters(false);
 
             IList<JsonWebKey> jsonWebKeys = new List<JsonWebKey> {
@@ -50,9 +52,9 @@ namespace HB.Component.Authorization
                 }
             };
 
-            string jsonString = JsonUtil.ToJson(new { Keys = jsonWebKeys });
+            string jsonWebKeySetString = SerializeUtil.ToJson(new { Keys = jsonWebKeys });
 
-            _jsonWebKeySet = new JsonWebKeySet(jsonString);
+            _jsonWebKeySet = new JsonWebKeySet(jsonWebKeySetString);
         }
 
         /// <summary>
@@ -64,11 +66,16 @@ namespace HB.Component.Authorization
             return _jsonWebKeySet;
         }
 
+        /// <summary>
+        /// GetIssuerSigningKeys
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="HB.Component.Authorization.AuthorizationException"></exception>
         public IEnumerable<SecurityKey> GetIssuerSigningKeys()
         {
             if (_jsonWebKeySet == null)
             {
-                return null;
+                throw new AuthorizationException(Resources.JsonWebKeySetIsNullErrorMessage);
             }
 
             return _jsonWebKeySet.GetSigningKeys();

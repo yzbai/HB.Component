@@ -4,28 +4,22 @@ using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using HB.Component.Identity.Abstractions;
 using HB.Component.Identity.Entity;
+using System;
 
 namespace HB.Component.Identity
 {
     internal class UserClaimBiz : IUserClaimBiz
     {
         private readonly IDatabase _db;
-        private readonly ILogger _logger;
 
-        public UserClaimBiz(IDatabase database, ILogger<UserClaimBiz> logger)
+        public UserClaimBiz(IDatabase database)
         {
             _db = database;
-            _logger = logger;
         }
 
-        public Task<IList<UserClaim>> GetAsync(string userGuid, TransactionContext transContext = null)
+        public Task<IEnumerable<TUserClaim>> GetAsync<TUserClaim>(string userGuid, TransactionContext? transContext = null) where TUserClaim : UserClaim, new()
         {
-            if (userGuid.IsNullOrEmpty())
-            {
-                return Task.FromResult((IList<UserClaim>)new List<UserClaim>());
-            }
-
-            return _db.RetrieveAsync<UserClaim>(uc => uc.UserGuid == userGuid, transContext);
+            return _db.RetrieveAsync<TUserClaim>(uc => uc.UserGuid == userGuid, transContext);
         }
     }
 }
