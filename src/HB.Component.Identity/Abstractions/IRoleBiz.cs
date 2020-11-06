@@ -25,7 +25,7 @@ namespace HB.Component.Identity.Abstractions
         //ErrCode UpdateRole(Role role, string lastUser);
 
         /// <exception cref="DatabaseException"></exception>
-        Task<IEnumerable<TRole>> GetByUserGuidAsync<TRole, TRoleOfUser>(string userGuid, TransactionContext? transContext = null) where TRole : Role, new() where TRoleOfUser : RoleOfUser, new();
+        Task<IEnumerable<TRole>> GetByUserGuidAsync<TRole, TRoleOfUser>(string userGuid, TransactionContext? transContext = null) where TRole : IdentityRole, new() where TRoleOfUser : IdentityRoleOfUser, new();
 
     }
 }

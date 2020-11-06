@@ -13,8 +13,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HB.Component.Identity", "sr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HB.Component.Authorization", "src\HB.Component.Authorization\HB.Component.Authorization.csproj", "{655C1902-D131-4C59-9DEA-0E1C173D0BC3}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sample", "sample", "{C4647281-864F-43B6-900F-B5BD03DF1616}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{A307EEFB-51A0-4744-AFDE-06FE018ABD91}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{9AB9D39F-831D-47D5-AFE8-4D9E32507790}"

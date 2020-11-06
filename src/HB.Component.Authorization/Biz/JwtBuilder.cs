@@ -29,10 +29,10 @@ namespace HB.Component.Authorization
             _identityService = identityService;
         }
 
-        public async Task<string> BuildJwtAsync<TUserClaim, TRole, TRoleOfUser>(User user, SignInToken signInToken, string? audience)
-            where TUserClaim : UserClaim, new()
-            where TRole : Role, new()
-            where TRoleOfUser : RoleOfUser, new()
+        public async Task<string> BuildJwtAsync<TUserClaim, TRole, TRoleOfUser>(IdenityUser user, SignInToken signInToken, string? audience)
+            where TUserClaim : IdentityUserClaim, new()
+            where TRole : IdentityRole, new()
+            where TRoleOfUser : IdentityRoleOfUser, new()
         {
             DateTime utcNow = DateTime.UtcNow;
 

@@ -83,10 +83,10 @@ namespace HB.Component.Authorization
         /// <exception cref="HB.Component.Authorization.AuthorizationException"></exception>
         /// <exception cref="DatabaseException"></exception>
         public async Task<SignInResult> SignInAsync<TUser, TUserClaim, TRole, TRoleOfUser>(SignInContext context)
-            where TUser : User, new()
-            where TUserClaim : UserClaim, new()
-            where TRole : Role, new()
-            where TRoleOfUser : RoleOfUser, new()
+            where TUser : IdenityUser, new()
+            where TUserClaim : IdentityUserClaim, new()
+            where TRole : IdentityRole, new()
+            where TRoleOfUser : IdentityRoleOfUser, new()
         {
             ThrowIf.NotValid(context);
 
@@ -199,10 +199,10 @@ namespace HB.Component.Authorization
         /// <exception cref="HB.Framework.Common.ValidateErrorException"></exception>
         /// <exception cref="HB.Component.Authorization.AuthorizationException"></exception>
         public async Task<string> RefreshAccessTokenAsync<TUser, TUserClaim, TRole, TRoleOfUser>(RefreshContext context)
-            where TUser : User, new()
-            where TUserClaim : UserClaim, new()
-            where TRole : Role, new()
-            where TRoleOfUser : RoleOfUser, new()
+            where TUser : IdenityUser, new()
+            where TUserClaim : IdentityUserClaim, new()
+            where TRole : IdentityRole, new()
+            where TRoleOfUser : IdentityRoleOfUser, new()
         {
             ThrowIf.NotValid(context);
 
@@ -320,7 +320,7 @@ namespace HB.Component.Authorization
         /// <param name="user"></param>
         /// <returns></returns>
         /// <exception cref="HB.Component.Authorization.AuthorizationException"></exception>
-        private Task PreSignInCheckAsync<TUser>(TUser user) where TUser : User, new()
+        private Task PreSignInCheckAsync<TUser>(TUser user) where TUser : IdenityUser, new()
         {
             ThrowIf.Null(user, nameof(user));
 
@@ -372,13 +372,13 @@ namespace HB.Component.Authorization
         /// <returns></returns>
         /// <exception cref="System.Reflection.TargetInvocationException">Ignore.</exception>
         /// <exception cref="ObjectDisposedException">Ignore.</exception>
-        private static bool PassowrdCheck(User user, string password)
+        private static bool PassowrdCheck(IdenityUser user, string password)
         {
             string passwordHash = SecurityUtil.EncryptPwdWithSalt(password, user.Guid);
             return passwordHash.Equals(user.PasswordHash, GlobalSettings.Comparison);
         }
 
-        private Task OnPasswordCheckFailedAsync<TUser>(TUser user) where TUser : User, new()
+        private Task OnPasswordCheckFailedAsync<TUser>(TUser user) where TUser : IdenityUser, new()
         {
             Task setAccessFailedCountTask = Task.CompletedTask;
 

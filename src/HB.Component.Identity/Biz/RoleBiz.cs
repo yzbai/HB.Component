@@ -25,11 +25,11 @@ namespace HB.Component.Identity
         /// <returns></returns>
         /// <exception cref="DatabaseException"></exception>
         public Task<IEnumerable<TRole>> GetByUserGuidAsync<TRole, TRoleOfUser>(string userGuid, TransactionContext? transContext = null) 
-            where TRole : Role, new() 
-            where TRoleOfUser : RoleOfUser, new()
+            where TRole : IdentityRole, new() 
+            where TRoleOfUser : IdentityRoleOfUser, new()
         {
             FromExpression<TRole> from = _database.From<TRole>().RightJoin<TRoleOfUser>((r, ru) => r.Guid == ru.RoleGuid);
-            WhereExpression<TRole> where = _database.Where<TRole>().And<RoleOfUser>(ru => ru.UserGuid == userGuid);
+            WhereExpression<TRole> where = _database.Where<TRole>().And<IdentityRoleOfUser>(ru => ru.UserGuid == userGuid);
 
             return _database.RetrieveAsync(from, where, transContext);
         }
