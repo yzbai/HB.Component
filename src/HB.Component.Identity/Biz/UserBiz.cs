@@ -77,7 +77,7 @@ namespace HB.Component.Identity
         /// <exception cref="HB.Component.Identity.IdentityException"></exception>
         /// <exception cref="ValidateErrorException"></exception>
         /// <exception cref="DatabaseException"></exception>
-        public async Task SetLockoutAsync<TUser>(string userGuid, bool lockout, TransactionContext transContext, TimeSpan? lockoutTimeSpan = null) where TUser : IdenityUser, new()
+        public async Task SetLockoutAsync<TUser>(string userGuid, bool lockout, string lastUser, TransactionContext transContext, TimeSpan? lockoutTimeSpan = null) where TUser : IdenityUser, new()
         {
             TUser? user = await GetAsync<TUser>(userGuid, transContext).ConfigureAwait(false);
 
@@ -93,7 +93,7 @@ namespace HB.Component.Identity
                 user.LockoutEndDate = DateTimeOffset.UtcNow + (lockoutTimeSpan ?? TimeSpan.FromDays(1));
             }
 
-            await _db.UpdateAsync(user, transContext).ConfigureAwait(false);
+            await _db.UpdateAsync(user, lastUser, transContext).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -106,7 +106,7 @@ namespace HB.Component.Identity
         /// <exception cref="HB.Component.Identity.IdentityException"></exception>
         /// <exception cref="ValidateErrorException"></exception>
         /// <exception cref="DatabaseException"></exception>
-        public async Task SetAccessFailedCountAsync<TUser>(string userGuid, long count, TransactionContext transContext) where TUser : IdenityUser, new()
+        public async Task SetAccessFailedCountAsync<TUser>(string userGuid, long count, string lastUser, TransactionContext transContext) where TUser : IdenityUser, new()
         {
             TUser? user = await GetAsync<TUser>(userGuid, transContext).ConfigureAwait(false);
 
@@ -122,7 +122,7 @@ namespace HB.Component.Identity
 
             user.AccessFailedCount = count;
 
-            await _db.UpdateAsync(user, transContext).ConfigureAwait(false);
+            await _db.UpdateAsync(user, lastUser, transContext).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -135,7 +135,7 @@ namespace HB.Component.Identity
         /// <exception cref="HB.Component.Identity.IdentityException"></exception>
         /// <exception cref="ValidateErrorException"></exception>
         /// <exception cref="DatabaseException"></exception>
-        public async Task SetLoginNameAsync<TUser>(string userGuid, string loginName, TransactionContext transContext) where TUser : IdenityUser, new()
+        public async Task SetLoginNameAsync<TUser>(string userGuid, string loginName, string lastUser, TransactionContext transContext) where TUser : IdenityUser, new()
         {
             ThrowIf.NullOrNotLoginName(loginName, nameof(loginName));
 
@@ -155,7 +155,7 @@ namespace HB.Component.Identity
 
             await ChangeSecurityStampAsync(user).ConfigureAwait(false);
 
-            await _db.UpdateAsync(user, transContext).ConfigureAwait(false);
+            await _db.UpdateAsync(user, lastUser, transContext).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -168,7 +168,7 @@ namespace HB.Component.Identity
         /// <exception cref="HB.Component.Identity.IdentityException"></exception>
         /// <exception cref="ValidateErrorException"></exception>
         /// <exception cref="DatabaseException"></exception>
-        public async Task SetPasswordByMobileAsync<TUser>(string mobile, string newPassword, TransactionContext transContext) where TUser : IdenityUser, new()
+        public async Task SetPasswordByMobileAsync<TUser>(string mobile, string newPassword, string lastUser, TransactionContext transContext) where TUser : IdenityUser, new()
         {
             ThrowIf.NullOrNotMobile(mobile, nameof(mobile));
             ThrowIf.NotPassword(mobile, nameof(newPassword), false);
@@ -184,7 +184,7 @@ namespace HB.Component.Identity
 
             await ChangeSecurityStampAsync(user).ConfigureAwait(false);
 
-            await _db.UpdateAsync(user, transContext).ConfigureAwait(false);
+            await _db.UpdateAsync(user, lastUser, transContext).ConfigureAwait(false);
         }
 
         private Task ChangeSecurityStampAsync(IdenityUser user)
@@ -246,7 +246,7 @@ namespace HB.Component.Identity
         /// <exception cref="HB.Component.Identity.IdentityException"></exception>
         /// <exception cref="ValidateErrorException"></exception>
         /// <exception cref="DatabaseException"></exception>
-        public async Task<TUser> CreateByMobileAsync<TUser>(string mobile, string? loginName, string? password, bool mobileConfirmed, TransactionContext transContext) where TUser : IdenityUser, new()
+        public async Task<TUser> CreateByMobileAsync<TUser>(string mobile, string? loginName, string? password, bool mobileConfirmed, string lastUser, TransactionContext transContext) where TUser : IdenityUser, new()
         {
             ThrowIf.NullOrNotMobile(mobile, nameof(mobile));
             ThrowIf.NotPassword(password, nameof(password), true);
@@ -276,7 +276,7 @@ namespace HB.Component.Identity
 
             user.MobileConfirmed = mobileConfirmed;
 
-            await _db.AddAsync(user, transContext).ConfigureAwait(false);
+            await _db.AddAsync(user, lastUser, transContext).ConfigureAwait(false);
 
             return user;
         }

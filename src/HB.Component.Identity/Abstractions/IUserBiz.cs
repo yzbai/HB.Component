@@ -11,7 +11,7 @@ namespace HB.Component.Identity.Abstractions
         /// <exception cref="HB.Component.Identity.IdentityException"></exception>
         /// <exception cref="ValidateErrorException"></exception>
         /// <exception cref="DatabaseException"></exception>
-        Task<TUser> CreateByMobileAsync<TUser>(string mobile, string? loginName, string? password, bool mobileConfirmed, TransactionContext transContext) where TUser : IdenityUser, new();
+        Task<TUser> CreateByMobileAsync<TUser>(string mobile, string? loginName, string? password, bool mobileConfirmed, string lastUser, TransactionContext transContext) where TUser : IdenityUser, new();
 
         Task<IEnumerable<TUser>> GetAsync<TUser>(IEnumerable<string> userGuids, TransactionContext? transContext = null) where TUser : IdenityUser, new();
         Task<TUser?> GetAsync<TUser>(string userGuid, TransactionContext? transContext = null) where TUser : IdenityUser, new();
@@ -22,23 +22,23 @@ namespace HB.Component.Identity.Abstractions
         /// <exception cref="HB.Component.Identity.IdentityException"></exception>
         /// <exception cref="ValidateErrorException"></exception>
         /// <exception cref="DatabaseException"></exception>
-        Task SetAccessFailedCountAsync<TUser>(string userGuid, long count, TransactionContext transContext) where TUser : IdenityUser, new();
+        Task SetAccessFailedCountAsync<TUser>(string userGuid, long count, string lastUser, TransactionContext transContext) where TUser : IdenityUser, new();
 
         /// <exception cref="HB.Component.Identity.IdentityException"></exception>
         /// <exception cref="ValidateErrorException"></exception>
         /// <exception cref="DatabaseException"></exception>
-        Task SetLockoutAsync<TUser>(string userGuid, bool lockout, TransactionContext transContext, TimeSpan? lockoutTimeSpan = null) where TUser : IdenityUser, new();
+        Task SetLockoutAsync<TUser>(string userGuid, bool lockout, string lastUser, TransactionContext transContext, TimeSpan? lockoutTimeSpan = null) where TUser : IdenityUser, new();
 
 
         /// <exception cref="HB.Component.Identity.IdentityException"></exception>
         /// <exception cref="ValidateErrorException"></exception>
         /// <exception cref="DatabaseException"></exception>
-        Task SetPasswordByMobileAsync<TUser>(string mobile, string newPassword, TransactionContext transContext) where TUser : IdenityUser, new();
+        Task SetPasswordByMobileAsync<TUser>(string mobile, string newPassword, string lastUser, TransactionContext transContext) where TUser : IdenityUser, new();
 
         /// <exception cref="HB.Component.Identity.IdentityException"></exception>
         /// <exception cref="ValidateErrorException"></exception>
         /// <exception cref="DatabaseException"></exception>
-        Task SetLoginNameAsync<TUser>(string userGuid, string loginName, TransactionContext transContext) where TUser : IdenityUser, new();
+        Task SetLoginNameAsync<TUser>(string userGuid, string loginName, string lastUser, TransactionContext transContext) where TUser : IdenityUser, new();
 
 
         Task<TUser?> ValidateSecurityStampAsync<TUser>(string userGuid, string? securityStamp, TransactionContext? transContext = null) where TUser : IdenityUser, new();

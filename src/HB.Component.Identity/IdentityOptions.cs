@@ -10,6 +10,7 @@ namespace HB.Component.Identity
         public IdentityOptions Value { get { return this; } }
 
 
+        //TODO: 考虑是否需要在SecurityStamp改变后，删除SignInToken？
         public IdentityEvents Events { get; set; } = new IdentityEvents();
     }
 }

@@ -33,12 +33,12 @@ namespace HB.Component.Identity
         /// <param name="mobileConfirmed"></param>
         /// <returns></returns>
         /// <exception cref="DatabaseException"></exception>
-        public async Task<TUser> CreateUserByMobileAsync<TUser>(string mobile, string? loginName, string? password, bool mobileConfirmed) where TUser : IdenityUser, new()
+        public async Task<TUser> CreateUserByMobileAsync<TUser>(string mobile, string? loginName, string? password, bool mobileConfirmed, string lastUser) where TUser : IdenityUser, new()
         {
             TransactionContext transactionContext = await _database.BeginTransactionAsync<TUser>(IsolationLevel.ReadCommitted).ConfigureAwait(false);
             try
             {
-                TUser user = await _userBiz.CreateByMobileAsync<TUser>(mobile, loginName, password, mobileConfirmed, transactionContext).ConfigureAwait(false);
+                TUser user = await _userBiz.CreateByMobileAsync<TUser>(mobile, loginName, password, mobileConfirmed, lastUser, transactionContext).ConfigureAwait(false);
 
                 await _database.CommitAsync(transactionContext).ConfigureAwait(false);
 
@@ -72,12 +72,12 @@ namespace HB.Component.Identity
         /// <param name="count"></param>
         /// <returns></returns>
         /// <exception cref="DatabaseException"></exception>
-        public async Task SetAccessFailedCountAsync<TUser>(string userGuid, long count) where TUser : IdenityUser, new()
+        public async Task SetAccessFailedCountAsync<TUser>(string userGuid, long count, string lastUser) where TUser : IdenityUser, new()
         {
             TransactionContext transactionContext = await _database.BeginTransactionAsync<TUser>(IsolationLevel.ReadCommitted).ConfigureAwait(false);
             try
             {
-                await _userBiz.SetAccessFailedCountAsync<TUser>(userGuid, count, transactionContext).ConfigureAwait(false);
+                await _userBiz.SetAccessFailedCountAsync<TUser>(userGuid, count, lastUser, transactionContext).ConfigureAwait(false);
 
                 await _database.CommitAsync(transactionContext).ConfigureAwait(false);
             }
@@ -96,13 +96,13 @@ namespace HB.Component.Identity
         /// <param name="lockoutTimeSpan"></param>
         /// <returns></returns>
         /// <exception cref="DatabaseException"></exception>
-        public async Task SetLockoutAsync<TUser>(string userGuid, bool lockout, TimeSpan? lockoutTimeSpan = null) where TUser : IdenityUser, new()
+        public async Task SetLockoutAsync<TUser>(string userGuid, bool lockout, string lastUser, TimeSpan? lockoutTimeSpan = null) where TUser : IdenityUser, new()
         {
             TransactionContext transactionContext = await _database.BeginTransactionAsync<TUser>(IsolationLevel.ReadCommitted).ConfigureAwait(false);
 
             try
             {
-                await _userBiz.SetLockoutAsync<TUser>(userGuid, lockout, transactionContext, lockoutTimeSpan).ConfigureAwait(false);
+                await _userBiz.SetLockoutAsync<TUser>(userGuid, lockout, lastUser, transactionContext, lockoutTimeSpan).ConfigureAwait(false);
 
                 await _database.CommitAsync(transactionContext).ConfigureAwait(false);
             }

@@ -1,4 +1,5 @@
 ﻿using HB.Framework.Common;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace HB.Component.Authorization.Abstractions
@@ -13,7 +14,7 @@ namespace HB.Component.Authorization.Abstractions
 
         [Required]
         public string DeviceId { get; set; } = default!;
-        public string DeviceType { get; set; } = default!;
+        public DeviceInfos DeviceInfos { get; set; } = default!;
         public string DeviceVersion { get; set; } = default!;
         //public string DeviceAddress { get; set; } = default!;
     }

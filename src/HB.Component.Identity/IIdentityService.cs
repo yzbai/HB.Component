@@ -13,13 +13,13 @@ namespace HB.Component.Identity
         Task<TUser?> GetUserByLoginNameAsync<TUser>(string loginName) where TUser : IdenityUser, new();
 
         /// <exception cref="DatabaseException"></exception>
-        Task<TUser> CreateUserByMobileAsync<TUser>(string mobile, string? loginName, string? password, bool mobileConfirmed) where TUser : IdenityUser, new();
+        Task<TUser> CreateUserByMobileAsync<TUser>(string mobile, string? loginName, string? password, bool mobileConfirmed, string lastUser) where TUser : IdenityUser, new();
 
         /// <exception cref="DatabaseException"></exception>
-        Task SetLockoutAsync<TUser>(string userGuid, bool lockout, TimeSpan? lockoutTimeSpan = null) where TUser : IdenityUser, new();
+        Task SetLockoutAsync<TUser>(string userGuid, bool lockout, string lastUser, TimeSpan? lockoutTimeSpan = null) where TUser : IdenityUser, new();
 
         /// <exception cref="DatabaseException"></exception>
-        Task SetAccessFailedCountAsync<TUser>(string userGuid, long count) where TUser : IdenityUser, new();
+        Task SetAccessFailedCountAsync<TUser>(string userGuid, long count, string lastUser) where TUser : IdenityUser, new();
 
         /// <exception cref="DatabaseException"></exception>
         Task<IEnumerable<Claim>> GetUserClaimAsync<TUserClaim, TRole, TRoleOfUser>(IdenityUser user)

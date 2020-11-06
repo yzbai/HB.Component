@@ -36,8 +36,8 @@ namespace HB.Component.Authorization.Entity
         public string DeviceId { get; set; } = default!;
 
         [Required]
-        [EntityProperty(NotNull = true)]
-        public string DeviceType { get; set; } = default!;
+        [EntityProperty(NotNull = true, Converter = typeof(DeviceInfosDatabaseTypeConverter))]
+        public DeviceInfos DeviceInfos { get; set; } = default!;
 
         [EntityProperty(NotNull = true)]
         public string DeviceVersion { get; set; } = default!;
@@ -49,5 +49,18 @@ namespace HB.Component.Authorization.Entity
         public string DeviceIp { get; set; } = default!;
 
         #endregion
+    }
+
+    public class DeviceInfosDatabaseTypeConverter : DatabaseTypeConverter
+    {
+        protected override object? StringDbValueToTypeValue(string stringValue)
+        {
+            return SerializeUtil.FromJson<DeviceInfos>(stringValue);
+        }
+
+        protected override string TypeValueToStringDbValue(object typeValue)
+        {
+            return SerializeUtil.ToJson(typeValue);
+        }
     }
 }

@@ -57,16 +57,32 @@ namespace HB.Component.Authorization
         /// <param name="signInTokenGuid"></param>
         /// <returns></returns>
         /// <exception cref="DatabaseException"></exception>
-        public async Task SignOutAsync(string signInTokenGuid)
+        public async Task SignOutAsync(string signInTokenGuid, string lastUser)
         {
             TransactionContext transactionContext = await _database.BeginTransactionAsync<SignInToken>(IsolationLevel.ReadCommitted).ConfigureAwait(false);
             try
             {
-                await _signInTokenBiz.DeleteAsync(signInTokenGuid, transactionContext).ConfigureAwait(false);
+                await _signInTokenBiz.DeleteAsync(signInTokenGuid, lastUser, transactionContext).ConfigureAwait(false);
 
                 await _database.CommitAsync(transactionContext).ConfigureAwait(false);
             }
-            //TODO: 考虑是否要捕捉DatabaseException，然后包装成Authorization Exception，再抛出？
+            catch
+            {
+                await _database.RollbackAsync(transactionContext).ConfigureAwait(false);
+                throw;
+            }
+        }
+
+        public async Task SignOutAsync(string userGuid, DeviceIdiom idiom, LogOffType logOffType, string lastUser)
+        {
+            TransactionContext transactionContext = await _database.BeginTransactionAsync<SignInToken>(IsolationLevel.ReadCommitted).ConfigureAwait(false);
+
+            try
+            {
+                await _signInTokenBiz.DeleteByLogOffTypeAsync(userGuid, idiom, logOffType, lastUser, transactionContext).ConfigureAwait(false);
+
+                await _database.CommitAsync(transactionContext).ConfigureAwait(false);
+            }
             catch
             {
                 await _database.RollbackAsync(transactionContext).ConfigureAwait(false);
@@ -82,7 +98,7 @@ namespace HB.Component.Authorization
         /// <exception cref="HB.Framework.Common.ValidateErrorException"></exception>
         /// <exception cref="HB.Component.Authorization.AuthorizationException"></exception>
         /// <exception cref="DatabaseException"></exception>
-        public async Task<SignInResult> SignInAsync<TUser, TUserClaim, TRole, TRoleOfUser>(SignInContext context)
+        public async Task<SignInResult> SignInAsync<TUser, TUserClaim, TRole, TRoleOfUser>(SignInContext context, string lastUser)
             where TUser : IdenityUser, new()
             where TUserClaim : IdentityUserClaim, new()
             where TRole : IdentityRole, new()
@@ -125,7 +141,7 @@ namespace HB.Component.Authorization
 
                 if (user == null && context.SignInType == SignInType.BySms)
                 {
-                    user = await _identityService.CreateUserByMobileAsync<TUser>(context.Mobile!, context.LoginName, context.Password, true).ConfigureAwait(false);
+                    user = await _identityService.CreateUserByMobileAsync<TUser>(context.Mobile!, context.LoginName, context.Password, true, lastUser).ConfigureAwait(false);
 
                     newUserCreated = true;
                 }
@@ -140,32 +156,28 @@ namespace HB.Component.Authorization
                 {
                     if (!PassowrdCheck(user, context.Password!))
                     {
-                        await OnPasswordCheckFailedAsync(user).ConfigureAwait(false);
+                        await OnPasswordCheckFailedAsync(user, lastUser).ConfigureAwait(false);
 
                         throw new AuthorizationException(ErrorCode.AuthorizationPasswordWrong, $"SignInContext:{SerializeUtil.ToJson(context)}");
                     }
                 }
 
                 //其他检查
-                await PreSignInCheckAsync(user).ConfigureAwait(false);
+                await PreSignInCheckAsync(user, lastUser).ConfigureAwait(false);
 
                 //注销其他客户端
-                DeviceType clientType = DeviceTypeChecker.Check(context.DeviceType);
-
-                if (clientType != DeviceType.Web && _signInOptions.AllowOnlyOneAppClient)
-                {
-                    await _signInTokenBiz.DeleteAppClientTokenByUserGuidAsync(user.Guid, transactionContext).ConfigureAwait(false);
-                }
+                await _signInTokenBiz.DeleteByLogOffTypeAsync(user.Guid, context.DeviceInfos.Idiom, context.LogOffType, context.DeviceInfos.Name, transactionContext).ConfigureAwait(false);
 
                 //创建Token
                 SignInToken userToken = await _signInTokenBiz.CreateAsync(
                     user.Guid,
                     context.DeviceId,
-                    clientType.ToString(),
+                    context.DeviceInfos,
                     context.DeviceVersion,
                     //context.DeviceAddress,
                     context.DeviceIp,
                     context.RememberMe ? _signInOptions.RefreshTokenLongExpireTimeSpan : _signInOptions.RefreshTokenShortExpireTimeSpan,
+                    lastUser,
                     transactionContext).ConfigureAwait(false);
 
                 await _database.CommitAsync(transactionContext).ConfigureAwait(false);
@@ -198,7 +210,7 @@ namespace HB.Component.Authorization
         /// <exception cref="DatabaseException"></exception>
         /// <exception cref="HB.Framework.Common.ValidateErrorException"></exception>
         /// <exception cref="HB.Component.Authorization.AuthorizationException"></exception>
-        public async Task<string> RefreshAccessTokenAsync<TUser, TUserClaim, TRole, TRoleOfUser>(RefreshContext context)
+        public async Task<string> RefreshAccessTokenAsync<TUser, TUserClaim, TRole, TRoleOfUser>(RefreshContext context, string lastUser)
             where TUser : IdenityUser, new()
             where TUserClaim : IdentityUserClaim, new()
             where TRole : IdentityRole, new()
@@ -277,7 +289,7 @@ namespace HB.Component.Authorization
                 {
                     await _database.RollbackAsync(transactionContext).ConfigureAwait(false);
 
-                    await BlackSignInTokenAsync(signInToken).ConfigureAwait(false);
+                    await BlackSignInTokenAsync(signInToken, lastUser).ConfigureAwait(false);
 
                     throw new AuthorizationException(ErrorCode.AuthorizationRefreshTokenExpired, $"Refresh Token Expired.");
                 }
@@ -290,7 +302,7 @@ namespace HB.Component.Authorization
                 {
                     await _database.RollbackAsync(transactionContext).ConfigureAwait(false);
 
-                    await BlackSignInTokenAsync(signInToken).ConfigureAwait(false);
+                    await BlackSignInTokenAsync(signInToken, lastUser).ConfigureAwait(false);
 
                     throw new AuthorizationException(ErrorCode.AuthorizationUserSecurityStampChanged, $"Refresh token error. User SecurityStamp Changed.");
                 }
@@ -298,7 +310,7 @@ namespace HB.Component.Authorization
                 // 更新SignInToken
                 signInToken.RefreshCount++;
 
-                await _signInTokenBiz.UpdateAsync(signInToken, transactionContext).ConfigureAwait(false);
+                await _signInTokenBiz.UpdateAsync(signInToken, lastUser, transactionContext).ConfigureAwait(false);
 
                 await _database.CommitAsync(transactionContext).ConfigureAwait(false);
 
@@ -320,7 +332,7 @@ namespace HB.Component.Authorization
         /// <param name="user"></param>
         /// <returns></returns>
         /// <exception cref="HB.Component.Authorization.AuthorizationException"></exception>
-        private Task PreSignInCheckAsync<TUser>(TUser user) where TUser : IdenityUser, new()
+        private Task PreSignInCheckAsync<TUser>(TUser user, string lastUser) where TUser : IdenityUser, new()
         {
             ThrowIf.Null(user, nameof(user));
 
@@ -353,8 +365,8 @@ namespace HB.Component.Authorization
                     }
                 }
             }
-            Task setLockTask = _signInOptions.RequiredLockoutCheck ? _identityService.SetLockoutAsync<TUser>(user.Guid, false) : Task.CompletedTask;
-            Task setAccessFailedCountTask = _signInOptions.RequiredMaxFailedCountCheck ? _identityService.SetAccessFailedCountAsync<TUser>(user.Guid, 0) : Task.CompletedTask;
+            Task setLockTask = _signInOptions.RequiredLockoutCheck ? _identityService.SetLockoutAsync<TUser>(user.Guid, false, lastUser) : Task.CompletedTask;
+            Task setAccessFailedCountTask = _signInOptions.RequiredMaxFailedCountCheck ? _identityService.SetAccessFailedCountAsync<TUser>(user.Guid, 0, lastUser) : Task.CompletedTask;
 
             if (_signInOptions.RequireTwoFactorCheck && user.TwoFactorEnabled)
             {
@@ -378,13 +390,13 @@ namespace HB.Component.Authorization
             return passwordHash.Equals(user.PasswordHash, GlobalSettings.Comparison);
         }
 
-        private Task OnPasswordCheckFailedAsync<TUser>(TUser user) where TUser : IdenityUser, new()
+        private Task OnPasswordCheckFailedAsync<TUser>(TUser user, string lastUser) where TUser : IdenityUser, new()
         {
             Task setAccessFailedCountTask = Task.CompletedTask;
 
             if (_signInOptions.RequiredMaxFailedCountCheck)
             {
-                setAccessFailedCountTask = _identityService.SetAccessFailedCountAsync<TUser>(user.Guid, user.AccessFailedCount + 1);
+                setAccessFailedCountTask = _identityService.SetAccessFailedCountAsync<TUser>(user.Guid, user.AccessFailedCount + 1, lastUser);
             }
 
             Task setLockoutTask = Task.CompletedTask;
@@ -393,7 +405,7 @@ namespace HB.Component.Authorization
             {
                 if (user.AccessFailedCount + 1 > _signInOptions.LockoutAfterAccessFailedCount)
                 {
-                    setLockoutTask = _identityService.SetLockoutAsync<TUser>(user.Guid, true, _signInOptions.LockoutTimeSpan);
+                    setLockoutTask = _identityService.SetLockoutAsync<TUser>(user.Guid, true, lastUser, _signInOptions.LockoutTimeSpan);
                 }
             }
 
@@ -407,13 +419,13 @@ namespace HB.Component.Authorization
         /// <returns></returns>
         /// <exception cref="DatabaseException"></exception>
         /// <exception cref="HB.Framework.Common.ValidateErrorException"></exception>
-        private async Task BlackSignInTokenAsync(SignInToken signInToken)
+        private async Task BlackSignInTokenAsync(SignInToken signInToken, string lastUser)
         {
             //TODO: 详细记录Black SiginInToken 的历史纪录
             TransactionContext transactionContext = await _database.BeginTransactionAsync<SignInToken>(IsolationLevel.ReadCommitted).ConfigureAwait(false);
             try
             {
-                await _signInTokenBiz.DeleteAsync(signInToken.Guid, transactionContext).ConfigureAwait(false);
+                await _signInTokenBiz.DeleteAsync(signInToken.Guid, lastUser, transactionContext).ConfigureAwait(false);
 
                 await _database.CommitAsync(transactionContext).ConfigureAwait(false);
             }
@@ -453,5 +465,7 @@ namespace HB.Component.Authorization
             };
             return new JwtSecurityTokenHandler().ValidateToken(context.AccessToken, parameters, out _);
         }
+
+
     }
 }
