@@ -10,16 +10,37 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace HB.Component.Authorization
 {
-    public class AuthorizationOptions : IOptions<AuthorizationOptions>
+    public class AuthorizationServerOptions : IOptions<AuthorizationServerOptions>
     {
-        public AuthorizationOptions Value { get { return this; } }
+        public AuthorizationServerOptions Value { get { return this; } }
 
+        /// <summary>
+        /// 面向用户的要求
+        /// </summary>
         public SignInOptions SignInOptions { get; set; } = new SignInOptions();
+
+        #region Jwt Options;
 
         public bool NeedAudienceToBeChecked { get; set; } = true;
 
+        /// <summary>
+        /// 签名算法
+        /// </summary>
+        public string SigningAlgorithm { get; set; } = SecurityAlgorithms.RsaSha256Signature;
+
+        /// <summary>
+        /// 用于签名的证书。签名让内容无法篡改，但可以被别人看到
+        /// </summary>
         [DisallowNull, NotNull]
-        public string? CertificateSubject { get; set; }
+        public string? SigningCertificateSubject { get; set; }
+
+
+        //TODO: 在appsettings.json中暂时用了DataProtection的证书，正式发布时需要换掉
+        /// <summary>
+        /// 用于加密的证书。用于内容不被别人看到
+        /// </summary>
+        [DisallowNull, NotNull]
+        public string? EncryptingCertificateSubject { get; set; }
 
         public OpenIdConnectConfiguration OpenIdConnectConfiguration { get; set; } = new OpenIdConnectConfiguration();
 
@@ -29,6 +50,7 @@ namespace HB.Component.Authorization
         /// </summary>
         public TimeSpan RefreshIntervalTimeSpan { get; set; } = TimeSpan.FromSeconds(30);
 
+        #endregion
     }
 
     public class SignInOptions

@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class AuthorizationServerServiceCollectionExtensions
     {
-        public static IServiceCollection AddAuthorizationServer(this IServiceCollection services, Action<AuthorizationOptions> optionsSetup)
+        public static IServiceCollection AddAuthorizationServer(this IServiceCollection services, Action<AuthorizationServerOptions> optionsSetup)
         {
             services.AddOptions();
             services.Configure(optionsSetup);
@@ -21,7 +21,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddAuthorizationServer(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddOptions();
-            services.Configure<AuthorizationOptions>(configuration);
+            services.Configure<AuthorizationServerOptions>(configuration);
 
             AddService(services);
 

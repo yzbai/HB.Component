@@ -5,12 +5,13 @@ namespace HB.Component.Authorization.Abstractions
 {
     internal interface ICredentialBiz
     {
-        SigningCredentials GetSigningCredentials();
+        SigningCredentials SigningCredentials { get; }
 
         /// <exception cref="HB.Component.Authorization.AuthorizationException"></exception>
-        IEnumerable<SecurityKey> GetIssuerSigningKeys();
+        IEnumerable<SecurityKey> IssuerSigningKeys { get; }
 
-        JsonWebKeySet GetJsonWebKeySet();
-
+        JsonWebKeySet JsonWebKeySet { get; }
+        EncryptingCredentials EncryptingCredentials { get; }
+        SecurityKey DecryptionSecurityKey { get; }
     }
 }

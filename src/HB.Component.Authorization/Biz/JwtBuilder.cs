@@ -16,16 +16,18 @@ namespace HB.Component.Authorization
     internal class JwtBuilder : IJwtBuilder
     {
         private readonly SignInOptions _signInOptions;
-        private readonly AuthorizationOptions _options;
+        private readonly AuthorizationServerOptions _options;
         private readonly SigningCredentials _signingCredentials;
+        private readonly EncryptingCredentials _encryptingCredentials;
 
         private readonly IIdentityService _identityService;
 
-        public JwtBuilder(IOptions<AuthorizationOptions> options, ICredentialBiz credentialBiz, IIdentityService identityService)
+        public JwtBuilder(IOptions<AuthorizationServerOptions> options, ICredentialBiz credentialBiz, IIdentityService identityService)
         {
             _options = options.Value;
             _signInOptions = _options.SignInOptions;
-            _signingCredentials = credentialBiz.GetSigningCredentials();
+            _signingCredentials = credentialBiz.SigningCredentials;
+            _encryptingCredentials = credentialBiz.EncryptingCredentials;
             _identityService = identityService;
         }
 
@@ -54,7 +56,8 @@ namespace HB.Component.Authorization
                 utcNow,
                 utcNow + _signInOptions.AccessTokenExpireTimeSpan,
                 utcNow,
-                _signingCredentials
+                _signingCredentials,
+                _encryptingCredentials
                 );
 
             return handler.WriteToken(token);

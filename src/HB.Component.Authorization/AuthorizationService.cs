@@ -17,7 +17,7 @@ namespace HB.Component.Authorization
     internal class AuthorizationService : IAuthorizationService
     {
         private readonly IDatabase _database;
-        private readonly AuthorizationOptions _options;
+        private readonly AuthorizationServerOptions _options;
         private readonly SignInOptions _signInOptions;
         private readonly IIdentityService _identityService;
         private readonly ISignInTokenBiz _signInTokenBiz;
@@ -27,7 +27,7 @@ namespace HB.Component.Authorization
 
         //private readonly ILogger logger;
 
-        public AuthorizationService(IDatabase database, IOptions<AuthorizationOptions> options, IDistributedCache distributedCache,
+        public AuthorizationService(IDatabase database, IOptions<AuthorizationServerOptions> options, IDistributedCache distributedCache,
             ISignInTokenBiz signInTokenBiz, IIdentityService identityManager, IJwtBuilder jwtBuilder, ICredentialBiz credentialManager/*, ILogger<AuthorizationService> logger*/)
         {
             _database = database;
@@ -48,7 +48,7 @@ namespace HB.Component.Authorization
         /// <exception cref="ArgumentException">Json无法解析</exception>
         public JsonWebKeySet GetJsonWebKeySet()
         {
-            return _credentialBiz.GetJsonWebKeySet();
+            return _credentialBiz.JsonWebKeySet;
         }
 
         /// <summary>
@@ -461,7 +461,8 @@ namespace HB.Component.Authorization
                 ValidateAudience = false,
                 ValidateLifetime = false,
                 ValidIssuer = _options.OpenIdConnectConfiguration.Issuer,
-                IssuerSigningKeys = _credentialBiz.GetIssuerSigningKeys()
+                IssuerSigningKeys = _credentialBiz.IssuerSigningKeys,
+                TokenDecryptionKey = _credentialBiz.DecryptionSecurityKey
             };
             return new JwtSecurityTokenHandler().ValidateToken(context.AccessToken, parameters, out _);
         }
