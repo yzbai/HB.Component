@@ -11,7 +11,7 @@ namespace HB.Component.Identity.Entity
     public abstract class IdentityRole : DatabaseEntity
     {
         [UniqueGuidEntityProperty]
-        public string Guid { get; set; } = default!;
+        public string Guid { get; set; } = SecurityUtil.CreateUniqueToken();
 
         [EntityProperty("角色名", Unique = true, NotNull = true)]
         public string Name { get; set; } = default!;
@@ -22,9 +22,9 @@ namespace HB.Component.Identity.Entity
         [EntityProperty("是否激活")]
         public bool IsActivated { get; set; }
 
-        [EntityProperty("说明", Length=1024)]
+        [EntityProperty("说明", Length = 1024)]
         public string? Comment { get; set; }
     }
 
-    
+
 }

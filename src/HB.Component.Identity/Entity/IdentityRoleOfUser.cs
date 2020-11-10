@@ -10,7 +10,7 @@ namespace HB.Component.Identity.Entity
     public abstract class IdentityRoleOfUser : DatabaseEntity
     {
         [UniqueGuidEntityProperty]
-        public string Guid { get; set; } = default!;
+        public string Guid { get; set; } = SecurityUtil.CreateUniqueToken();
 
         [ForeignKey(typeof(IdenityUser))]
         [GuidEntityProperty(NotNull = true)]

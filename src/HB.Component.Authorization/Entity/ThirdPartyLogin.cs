@@ -8,7 +8,7 @@ namespace HB.Component.Authorization.Entity
     public class ThirdPartyLogin : DatabaseEntity
     {
         [UniqueGuidEntityProperty]
-        public string Guid { get; set; } = default!;
+        public string Guid { get; set; } = SecurityUtil.CreateUniqueToken();
 
         [ForeignKey(typeof(IdenityUser))]
         [GuidEntityProperty(NotNull = true)]
@@ -17,7 +17,7 @@ namespace HB.Component.Authorization.Entity
         [EntityProperty("登陆提供者", Length = 500, NotNull = true)]
         public string LoginProvider { get; set; } = default!;
 
-        [EntityProperty("登陆key", Length=500, NotNull = true)]
+        [EntityProperty("登陆key", Length = 500, NotNull = true)]
         public string ProviderKey { get; set; } = default!;
 
         [EntityProperty("提供者显示名称", Length = 500, NotNull = true)]

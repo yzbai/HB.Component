@@ -36,7 +36,6 @@ namespace HB.Component.Authorization
         {
             SignInToken token = new SignInToken
             {
-                Guid = SecurityUtil.CreateUniqueToken(),
                 UserGuid = userGuid,
                 RefreshToken = SecurityUtil.CreateUniqueToken(),
                 RefreshCount = 0,

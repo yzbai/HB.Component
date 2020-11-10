@@ -217,7 +217,6 @@ namespace HB.Component.Identity
             {
                 //UserType = userType,
                 Mobile = mobile,
-                Guid = SecurityUtil.CreateUniqueToken(),
                 SecurityStamp = SecurityUtil.CreateUniqueToken(),
                 IsActivated = true,
                 AccessFailedCount = 0,
