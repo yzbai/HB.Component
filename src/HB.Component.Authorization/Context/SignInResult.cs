@@ -1,4 +1,4 @@
-﻿using HB.Component.Identity.Entity;
+﻿using HB.Component.Identity.Entities;
 
 namespace HB.Component.Authorization
 {

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using HB.Component.Identity.Entity;
+using HB.Component.Identity.Entities;
 using HB.Framework.Database;
 
 namespace HB.Component.Identity.Abstractions

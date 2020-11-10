@@ -1,7 +1,7 @@
 ﻿using HB.Component.Authorization.Abstractions;
-using HB.Component.Authorization.Entity;
+using HB.Component.Authorization.Entities;
 using HB.Component.Identity;
-using HB.Component.Identity.Entity;
+using HB.Component.Identity.Entities;
 using HB.Framework.Database;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;

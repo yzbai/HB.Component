@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using HB.Component.Identity.Abstractions;
-using HB.Component.Identity.Entity;
+using HB.Component.Identity.Entities;
 using System;
 
 namespace HB.Component.Identity

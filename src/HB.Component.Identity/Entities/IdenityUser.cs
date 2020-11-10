@@ -1,15 +1,16 @@
-﻿using HB.Framework.Database.Entity;
+﻿using HB.Framework.Common.Entities;
+using HB.Framework.Database.Entities;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
-namespace HB.Component.Identity.Entity
+namespace HB.Component.Identity.Entities
 {
     /// <summary>
     /// 通用用户类，只是登陆注册信息，不包含任何附加信息，请另行创建Profile类来存储用户其他信息
     /// </summary>
     //[Serializable]
-    public abstract class IdenityUser : DatabaseEntity
+    public abstract class IdenityUser : Entity
     {
         [Required]
         [GuidEntityProperty(NotNull = true)]

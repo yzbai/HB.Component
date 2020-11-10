@@ -1,8 +1,8 @@
 ﻿using System.Security;
 using System.Threading.Tasks;
-using HB.Component.Authorization.Entity;
+using HB.Component.Authorization.Entities;
 using HB.Component.Identity;
-using HB.Component.Identity.Entity;
+using HB.Component.Identity.Entities;
 
 namespace HB.Component.Authorization.Abstractions
 {

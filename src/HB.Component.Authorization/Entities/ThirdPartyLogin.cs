@@ -1,9 +1,9 @@
-﻿using HB.Framework.Database.Entity;
+﻿using HB.Framework.Database.Entities;
 using HB.Component.Identity;
 using System;
-using HB.Component.Identity.Entity;
+using HB.Component.Identity.Entities;
 
-namespace HB.Component.Authorization.Entity
+namespace HB.Component.Authorization.Entities
 {
     public class ThirdPartyLogin : DatabaseEntity
     {

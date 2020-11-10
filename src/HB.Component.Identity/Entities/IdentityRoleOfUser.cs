@@ -1,8 +1,8 @@
-﻿using HB.Framework.Database.Entity;
+﻿using HB.Framework.Database.Entities;
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace HB.Component.Identity.Entity
+namespace HB.Component.Identity.Entities
 {
     /// <summary>
     /// 用户-角色 关系 实体

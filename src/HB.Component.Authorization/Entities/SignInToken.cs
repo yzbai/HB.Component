@@ -1,11 +1,12 @@
-﻿using HB.Framework.Database.Entity;
+﻿using HB.Framework.Database.Entities;
 using System;
 using System.ComponentModel.DataAnnotations;
-using HB.Component.Identity.Entity;
+using HB.Component.Identity.Entities;
+using HB.Framework.Common.Entities;
 
-namespace HB.Component.Authorization.Entity
+namespace HB.Component.Authorization.Entities
 {
-    public class SignInToken : DatabaseEntity
+    public class SignInToken : Entity
     {
         [ForeignKey(typeof(IdenityUser))]
         [GuidEntityProperty(NotNull = true)]

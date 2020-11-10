@@ -1,4 +1,4 @@
-﻿using HB.Component.Authorization.Entity;
+﻿using HB.Component.Authorization.Entities;
 using HB.Framework.Database;
 using System;
 using System.Threading.Tasks;

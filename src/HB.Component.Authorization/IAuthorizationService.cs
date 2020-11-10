@@ -1,5 +1,5 @@
 ﻿using HB.Component.Authorization.Abstractions;
-using HB.Component.Identity.Entity;
+using HB.Component.Identity.Entities;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Threading.Tasks;

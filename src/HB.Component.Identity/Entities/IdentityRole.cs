@@ -1,9 +1,9 @@
-using HB.Framework.Database.Entity;
+using HB.Framework.Database.Entities;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
-namespace HB.Component.Identity.Entity
+namespace HB.Component.Identity.Entities
 {
     /// <summary>
     /// ½ÇÉ«

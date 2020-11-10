@@ -1,4 +1,4 @@
-﻿using HB.Component.Identity.Entity;
+﻿using HB.Component.Identity.Entities;
 using HB.Framework.Database;
 using System;
 using System.Collections.Generic;

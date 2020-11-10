@@ -1,5 +1,5 @@
 ﻿using HB.Component.Identity.Abstractions;
-using HB.Component.Identity.Entity;
+using HB.Component.Identity.Entities;
 using HB.Framework.Database;
 using HB.Framework.Database.SQL;
 using System;

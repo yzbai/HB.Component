@@ -1,5 +1,5 @@
 ﻿using HB.Component.Authorization.Abstractions;
-using HB.Component.Authorization.Entity;
+using HB.Component.Authorization.Entities;
 using HB.Framework.Database;
 using HB.Framework.Database.SQL;
 using System;

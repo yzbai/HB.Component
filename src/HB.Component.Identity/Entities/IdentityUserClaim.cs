@@ -1,7 +1,7 @@
-﻿using HB.Framework.Database.Entity;
+﻿using HB.Framework.Database.Entities;
 using System;
 
-namespace HB.Component.Identity.Entity
+namespace HB.Component.Identity.Entities
 {
     public abstract class IdentityUserClaim : DatabaseEntity
     {
