@@ -10,9 +10,6 @@ namespace HB.Component.Identity.Entity
     /// </summary>
     public abstract class IdentityRole : DatabaseEntity
     {
-        [UniqueGuidEntityProperty]
-        public string Guid { get; set; } = SecurityUtil.CreateUniqueToken();
-
         [EntityProperty("½ÇÉ«Ãû", Unique = true, NotNull = true)]
         public string Name { get; set; } = default!;
 

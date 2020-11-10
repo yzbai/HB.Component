@@ -5,8 +5,6 @@ namespace HB.Component.Identity.Entity
 {
     public abstract class IdentityUserClaim : DatabaseEntity
     {
-        [UniqueGuidEntityProperty]
-        public string Guid { get; set; } = SecurityUtil.CreateUniqueToken();
 
         [ForeignKey(typeof(IdenityUser))]
         [GuidEntityProperty(NotNull = true)]

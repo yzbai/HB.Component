@@ -12,16 +12,6 @@ namespace HB.Component.Identity.Entity
     public abstract class IdenityUser : DatabaseEntity
     {
         [Required]
-        [UniqueGuidEntityProperty]
-        public string Guid { get; set; } = SecurityUtil.CreateUniqueToken();
-
-
-        //[Required]
-        //[EntityProperty("UserType", NotNull = true, Length = 100)]
-        //public string UserType { get; set; }
-
-
-        [Required]
         [GuidEntityProperty(NotNull = true)]
         public string SecurityStamp { get; set; } = default!;
 
