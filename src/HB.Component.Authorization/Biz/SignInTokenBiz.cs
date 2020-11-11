@@ -6,16 +6,17 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using HB.Framework.KVStore;
 
 namespace HB.Component.Authorization
 {
     internal class SignInTokenBiz : ISignInTokenBiz
     {
-        private readonly IDatabase _db;
+        private readonly IKVStore _kv;
 
-        public SignInTokenBiz(IDatabase database)
+        public SignInTokenBiz(IKVStore kv)
         {
-            _db = database;
+            _kv = kv;
         }
 
         /// <summary>
@@ -32,7 +33,14 @@ namespace HB.Component.Authorization
         /// <returns></returns>
         /// <exception cref="HB.Framework.Common.ValidateErrorException"></exception>
         /// <exception cref="DatabaseException"></exception>
-        public async Task<SignInToken> CreateAsync(string userGuid, string deviceId, DeviceInfos deviceInfos, string deviceVersion, /*string deviceAddress,*/ string ipAddress, TimeSpan expireTimeSpan, string lastUser, TransactionContext? transContext = null)
+        public async Task<SignInToken> CreateAsync(
+            string userGuid,
+            string deviceId,
+            DeviceInfos deviceInfos,
+            string deviceVersion,
+            string ipAddress,
+            TimeSpan expireTimeSpan,
+            string lastUser)
         {
             SignInToken token = new SignInToken
             {
@@ -43,12 +51,11 @@ namespace HB.Component.Authorization
                 DeviceId = deviceId,
                 DeviceInfos = deviceInfos,
                 DeviceVersion = deviceVersion,
-                //DeviceAddress = deviceAddress,
                 DeviceIp = ipAddress,
                 ExpireAt = DateTimeOffset.UtcNow + expireTimeSpan
             };
 
-            await _db.AddAsync(token, lastUser, transContext).ConfigureAwait(false);
+            await _kv.AddAsync(token).ConfigureAwait(false);
 
             return token;
         }

@@ -15,23 +15,23 @@ namespace HB.Component.Authorization.Abstractions
         /// <exception cref="System.ArgumentException"></exception>
         /// <exception cref="DatabaseException"></exception>
         /// <exception cref="HB.Framework.Common.ValidateErrorException"></exception>
-        Task DeleteByLogOffTypeAsync(string userGuid, DeviceIdiom currentIdiom, LogOffType logOffType, string lastUser, TransactionContext transContext);
+        Task DeleteByLogOffTypeAsync(string userGuid, DeviceIdiom currentIdiom, LogOffType logOffType, string lastUser);
 
 
         /// <exception cref="HB.Framework.Common.ValidateErrorException"></exception>
         /// <exception cref="DatabaseException"></exception>
-        Task DeleteAsync(string signInTokenGuid, string lastUser, TransactionContext transContext);
+        Task DeleteAsync(string signInTokenGuid, string lastUser);
 
         /// <exception cref="HB.Framework.Common.ValidateErrorException"></exception>
         /// <exception cref="DatabaseException"></exception>
-        Task DeleteByUserGuidAsync(string userGuid, string lastUser, TransactionContext transContext);
+        Task DeleteByUserGuidAsync(string userGuid, string lastUser);
 
 
-        Task<SignInToken?> GetAsync(string? signInTokenGuid, string? refreshToken, string deviceId, string? userGuid, TransactionContext? transContext = null);
+        Task<SignInToken?> GetAsync(string? signInTokenGuid, string? refreshToken, string deviceId, string? userGuid);
 
 
         /// <exception cref="HB.Framework.Common.ValidateErrorException"></exception>
         /// <exception cref="DatabaseException"></exception>
-        Task UpdateAsync(SignInToken signInToken, string lastUser, TransactionContext? transContext = null);
+        Task UpdateAsync(SignInToken signInToken, string lastUser);
     }
 }
