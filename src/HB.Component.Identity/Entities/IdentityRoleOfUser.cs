@@ -1,4 +1,5 @@
-﻿using HB.Framework.Database.Entities;
+﻿using HB.Framework.Common.Entities;
+using HB.Framework.Database.Entities;
 using System;
 using System.Diagnostics.CodeAnalysis;
 
@@ -7,7 +8,7 @@ namespace HB.Component.Identity.Entities
     /// <summary>
     /// 用户-角色 关系 实体
     /// </summary>
-    public abstract class IdentityRoleOfUser : DatabaseEntity
+    public abstract class IdentityRoleOfUser : Entity
     {
         [ForeignKey(typeof(IdenityUser))]
         [GuidEntityProperty(NotNull = true)]

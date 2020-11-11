@@ -1,3 +1,4 @@
+using HB.Framework.Common.Entities;
 using HB.Framework.Database.Entities;
 using System;
 using System.ComponentModel.DataAnnotations;
@@ -8,7 +9,7 @@ namespace HB.Component.Identity.Entities
     /// <summary>
     /// ½ÇÉ«
     /// </summary>
-    public abstract class IdentityRole : DatabaseEntity
+    public abstract class IdentityRole : Entity
     {
         [EntityProperty("½ÇÉ«Ãû", Unique = true, NotNull = true)]
         public string Name { get; set; } = default!;

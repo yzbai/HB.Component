@@ -19,8 +19,10 @@
     </PackageReference>
   </ItemGroup>
 
+
+
   <ItemGroup>
-    <ProjectReference Include="..\..\..\HB.Framework.Database\src\HB.Framework.Database\HB.Framework.Database.csproj" />
+    <ProjectReference Include="..\..\..\HB.Framework\src\HB.Framework.Repository\HB.Framework.Repository.csproj" />
   </ItemGroup>
  
 </Project>

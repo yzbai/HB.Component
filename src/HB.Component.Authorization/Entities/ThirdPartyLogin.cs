@@ -2,10 +2,12 @@
 using HB.Component.Identity;
 using System;
 using HB.Component.Identity.Entities;
+using HB.Framework.Common.Entities;
 
 namespace HB.Component.Authorization.Entities
 {
-    public class ThirdPartyLogin : DatabaseEntity
+    [DatabaseEntity]
+    public class ThirdPartyLogin : Entity
     {
         [ForeignKey(typeof(IdenityUser))]
         [GuidEntityProperty(NotNull = true)]

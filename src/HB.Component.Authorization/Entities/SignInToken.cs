@@ -6,6 +6,7 @@ using HB.Framework.Common.Entities;
 
 namespace HB.Component.Authorization.Entities
 {
+    [DatabaseEntity]
     public class SignInToken : Entity
     {
         [ForeignKey(typeof(IdenityUser))]

@@ -1,9 +1,10 @@
-﻿using HB.Framework.Database.Entities;
+﻿using HB.Framework.Common.Entities;
+using HB.Framework.Database.Entities;
 using System;
 
 namespace HB.Component.Identity.Entities
 {
-    public abstract class IdentityUserClaim : DatabaseEntity
+    public abstract class IdentityUserClaim : Entity
     {
 
         [ForeignKey(typeof(IdenityUser))]
