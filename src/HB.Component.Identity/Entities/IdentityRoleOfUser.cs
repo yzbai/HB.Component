@@ -10,7 +10,7 @@ namespace HB.Component.Identity.Entities
     /// </summary>
     public abstract class IdentityRoleOfUser : Entity
     {
-        [ForeignKey(typeof(IdenityUser))]
+        [ForeignKey(typeof(IdentityUser))]
         [GuidEntityProperty(NotNull = true)]
         [DisallowNull, NotNull]
         public string UserGuid { get; set; } = default!;

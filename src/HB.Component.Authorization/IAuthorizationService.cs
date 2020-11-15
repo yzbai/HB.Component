@@ -12,7 +12,7 @@ namespace HB.Component.Authorization
         /// <exception cref="HB.Framework.Common.ValidateErrorException"></exception>
         /// <exception cref="HB.Component.Authorization.AuthorizationException"></exception>
         Task<string> RefreshAccessTokenAsync<TUser, TUserClaim, TRole, TRoleOfUser>(RefreshContext context, string lastUser)
-            where TUser : IdenityUser, new()
+            where TUser : IdentityUser, new()
             where TUserClaim : IdentityUserClaim, new()
             where TRole : IdentityRole, new()
             where TRoleOfUser : IdentityRoleOfUser, new();
@@ -21,7 +21,7 @@ namespace HB.Component.Authorization
         /// <exception cref="HB.Component.Authorization.AuthorizationException"></exception>
         /// <exception cref="DatabaseException"></exception>
         Task<SignInResult> SignInAsync<TUser, TUserClaim, TRole, TRoleOfUser>(SignInContext context, string lastUser)
-            where TUser : IdenityUser, new()
+            where TUser : IdentityUser, new()
             where TUserClaim : IdentityUserClaim, new()
             where TRole : IdentityRole, new()
             where TRoleOfUser : IdentityRoleOfUser, new();

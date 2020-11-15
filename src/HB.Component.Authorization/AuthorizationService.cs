@@ -99,7 +99,7 @@ namespace HB.Component.Authorization
         /// <exception cref="HB.Component.Authorization.AuthorizationException"></exception>
         /// <exception cref="DatabaseException"></exception>
         public async Task<SignInResult> SignInAsync<TUser, TUserClaim, TRole, TRoleOfUser>(SignInContext context, string lastUser)
-            where TUser : IdenityUser, new()
+            where TUser : IdentityUser, new()
             where TUserClaim : IdentityUserClaim, new()
             where TRole : IdentityRole, new()
             where TRoleOfUser : IdentityRoleOfUser, new()
@@ -211,7 +211,7 @@ namespace HB.Component.Authorization
         /// <exception cref="HB.Framework.Common.ValidateErrorException"></exception>
         /// <exception cref="HB.Component.Authorization.AuthorizationException"></exception>
         public async Task<string> RefreshAccessTokenAsync<TUser, TUserClaim, TRole, TRoleOfUser>(RefreshContext context, string lastUser)
-            where TUser : IdenityUser, new()
+            where TUser : IdentityUser, new()
             where TUserClaim : IdentityUserClaim, new()
             where TRole : IdentityRole, new()
             where TRoleOfUser : IdentityRoleOfUser, new()
@@ -296,7 +296,7 @@ namespace HB.Component.Authorization
 
                 // User 信息变动验证
 
-                user = await _identityService.ValidateSecurityStampAsync<TUser>(userGuid, claimsPrincipal.GetUserSecurityStamp()).ConfigureAwait(false);
+                user = await _identityService.GetUserBySecurityStampAsync<TUser>(userGuid, claimsPrincipal.GetUserSecurityStamp()).ConfigureAwait(false);
 
                 if (user == null)
                 {
@@ -332,7 +332,7 @@ namespace HB.Component.Authorization
         /// <param name="user"></param>
         /// <returns></returns>
         /// <exception cref="HB.Component.Authorization.AuthorizationException"></exception>
-        private Task PreSignInCheckAsync<TUser>(TUser user, string lastUser) where TUser : IdenityUser, new()
+        private Task PreSignInCheckAsync<TUser>(TUser user, string lastUser) where TUser : IdentityUser, new()
         {
             ThrowIf.Null(user, nameof(user));
 
@@ -384,13 +384,13 @@ namespace HB.Component.Authorization
         /// <returns></returns>
         /// <exception cref="System.Reflection.TargetInvocationException">Ignore.</exception>
         /// <exception cref="ObjectDisposedException">Ignore.</exception>
-        private static bool PassowrdCheck(IdenityUser user, string password)
+        private static bool PassowrdCheck(IdentityUser user, string password)
         {
             string passwordHash = SecurityUtil.EncryptPwdWithSalt(password, user.Guid);
             return passwordHash.Equals(user.PasswordHash, GlobalSettings.Comparison);
         }
 
-        private Task OnPasswordCheckFailedAsync<TUser>(TUser user, string lastUser) where TUser : IdenityUser, new()
+        private Task OnPasswordCheckFailedAsync<TUser>(TUser user, string lastUser) where TUser : IdentityUser, new()
         {
             Task setAccessFailedCountTask = Task.CompletedTask;
 

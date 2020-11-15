@@ -11,29 +11,18 @@ namespace HB.Component.Identity
 {
     internal class IdentityService : IIdentityService
     {
-        //private readonly ILogger _logger;
         private readonly IDatabase _database;
         private readonly IUserBiz _userBiz;
         private readonly IClaimsPrincipalFactory _claimsFactory;
 
-        public IdentityService(IDatabase database, IUserBiz userBiz, IClaimsPrincipalFactory claimsFactory/*, ILogger<IdentityService> logger*/)
+        public IdentityService(IDatabase database, IUserBiz userBiz, IClaimsPrincipalFactory claimsFactory)
         {
             _userBiz = userBiz;
             _database = database;
-            //this._logger = logger;
             _claimsFactory = claimsFactory;
         }
 
-        /// <summary>
-        /// CreateUserByMobileAsync
-        /// </summary>
-        /// <param name="mobile"></param>
-        /// <param name="loginName"></param>
-        /// <param name="password"></param>
-        /// <param name="mobileConfirmed"></param>
-        /// <returns></returns>
-        /// <exception cref="DatabaseException"></exception>
-        public async Task<TUser> CreateUserByMobileAsync<TUser>(string mobile, string? loginName, string? password, bool mobileConfirmed, string lastUser) where TUser : IdenityUser, new()
+        public async Task<TUser> CreateUserByMobileAsync<TUser>(string mobile, string? loginName, string? password, bool mobileConfirmed, string lastUser) where TUser : IdentityUser, new()
         {
             TransactionContext transactionContext = await _database.BeginTransactionAsync<TUser>(IsolationLevel.ReadCommitted).ConfigureAwait(false);
             try
@@ -47,32 +36,21 @@ namespace HB.Component.Identity
             catch
             {
                 await _database.RollbackAsync(transactionContext).ConfigureAwait(false);
-
-                //TODO: 思考，这里需要记录吗，还是在调用者那里记录
-                //_logger.LogException(ex);
-
                 throw;
             }
         }
 
-        public Task<TUser?> GetUserByMobileAsync<TUser>(string mobile) where TUser : IdenityUser, new()
+        public Task<TUser?> GetUserByMobileAsync<TUser>(string mobile) where TUser : IdentityUser, new()
         {
             return _userBiz.GetByMobileAsync<TUser>(mobile);
         }
 
-        public Task<TUser?> GetUserByLoginNameAsync<TUser>(string loginName) where TUser : IdenityUser, new()
+        public Task<TUser?> GetUserByLoginNameAsync<TUser>(string loginName) where TUser : IdentityUser, new()
         {
             return _userBiz.GetByLoginNameAsync<TUser>(loginName);
         }
 
-        /// <summary>
-        /// SetAccessFailedCountAsync
-        /// </summary>
-        /// <param name="userGuid"></param>
-        /// <param name="count"></param>
-        /// <returns></returns>
-        /// <exception cref="DatabaseException"></exception>
-        public async Task SetAccessFailedCountAsync<TUser>(string userGuid, long count, string lastUser) where TUser : IdenityUser, new()
+        public async Task SetAccessFailedCountAsync<TUser>(string userGuid, long count, string lastUser) where TUser : IdentityUser, new()
         {
             TransactionContext transactionContext = await _database.BeginTransactionAsync<TUser>(IsolationLevel.ReadCommitted).ConfigureAwait(false);
             try
@@ -88,15 +66,7 @@ namespace HB.Component.Identity
             }
         }
 
-        /// <summary>
-        /// SetLockoutAsync
-        /// </summary>
-        /// <param name="userGuid"></param>
-        /// <param name="lockout"></param>
-        /// <param name="lockoutTimeSpan"></param>
-        /// <returns></returns>
-        /// <exception cref="DatabaseException"></exception>
-        public async Task SetLockoutAsync<TUser>(string userGuid, bool lockout, string lastUser, TimeSpan? lockoutTimeSpan = null) where TUser : IdenityUser, new()
+        public async Task SetLockoutAsync<TUser>(string userGuid, bool lockout, string lastUser, TimeSpan? lockoutTimeSpan = null) where TUser : IdentityUser, new()
         {
             TransactionContext transactionContext = await _database.BeginTransactionAsync<TUser>(IsolationLevel.ReadCommitted).ConfigureAwait(false);
 
@@ -113,18 +83,12 @@ namespace HB.Component.Identity
             }
         }
 
-        public Task<TUser?> ValidateSecurityStampAsync<TUser>(string userGuid, string? securityStamp) where TUser : IdenityUser, new()
+        public Task<TUser?> GetUserBySecurityStampAsync<TUser>(string userGuid, string? securityStamp) where TUser : IdentityUser, new()
         {
-            return _userBiz.ValidateSecurityStampAsync<TUser>(userGuid, securityStamp);
+            return _userBiz.GetUserBySecurityStampAsync<TUser>(userGuid, securityStamp);
         }
 
-        /// <summary>
-        /// GetUserClaimAsync
-        /// </summary>
-        /// <param name="user"></param>
-        /// <returns></returns>
-        /// <exception cref="DatabaseException"></exception>
-        public async Task<IEnumerable<Claim>> GetUserClaimAsync<TUserClaim, TRole, TRoleOfUser>(IdenityUser user)
+        public async Task<IEnumerable<Claim>> GetUserClaimAsync<TUserClaim, TRole, TRoleOfUser>(IdentityUser user)
             where TUserClaim : IdentityUserClaim, new()
             where TRole : IdentityRole, new()
             where TRoleOfUser : IdentityRoleOfUser, new()

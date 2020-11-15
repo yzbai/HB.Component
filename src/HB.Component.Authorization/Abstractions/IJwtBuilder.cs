@@ -8,7 +8,7 @@ namespace HB.Component.Authorization.Abstractions
 {
     internal interface IJwtBuilder
     {
-        Task<string> BuildJwtAsync<TUserClaim, TRole, TRoleOfUser>(IdenityUser user, SignInToken signInToken, string? audience)
+        Task<string> BuildJwtAsync<TUserClaim, TRole, TRoleOfUser>(IdentityUser user, SignInToken signInToken, string? audience)
             where TUserClaim : IdentityUserClaim, new()
             where TRole : IdentityRole, new()
             where TRoleOfUser : IdentityRoleOfUser, new();

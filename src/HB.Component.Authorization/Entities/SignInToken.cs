@@ -9,7 +9,8 @@ namespace HB.Component.Authorization.Entities
     [KVStoreEntity]
     public class SignInToken : Entity
     {
-        [ForeignKey(typeof(IdenityUser))]
+        [Required]
+        [ForeignKey(typeof(IdentityUser))]
         [GuidEntityProperty(NotNull = true)]
         public string UserGuid { get; set; } = default!;
 

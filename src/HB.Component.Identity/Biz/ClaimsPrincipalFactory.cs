@@ -26,7 +26,7 @@ namespace HB.Component.Identity
         /// <param name="user"></param>
         /// <param name="transContext"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<Claim>> CreateClaimsAsync<TUserClaim, TRole, TRoleOfUser>(IdenityUser user, TransactionContext transContext)
+        public async Task<IEnumerable<Claim>> CreateClaimsAsync<TUserClaim, TRole, TRoleOfUser>(IdentityUser user, TransactionContext transContext)
             where TUserClaim : IdentityUserClaim, new()
             where TRole : IdentityRole, new()
             where TRoleOfUser : IdentityRoleOfUser, new()

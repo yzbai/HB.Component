@@ -6,8 +6,7 @@ namespace HB.Component.Identity.Entities
 {
     public abstract class IdentityUserClaim : Entity
     {
-
-        [ForeignKey(typeof(IdenityUser))]
+        [ForeignKey(typeof(IdentityUser))]
         [GuidEntityProperty(NotNull = true)]
         public string UserGuid { get; set; } = default!;
 
