@@ -1,5 +1,7 @@
 ﻿using HB.Component.Identity.Abstractions;
+using HB.Component.Identity.Entities;
 using HB.Framework.Database;
+using HB.Framework.KVStore;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,44 +11,39 @@ namespace HB.Component.Identity.Biz
 {
     internal class UserLoginControlBiz : IUserLoginControlBiz
     {
-        public 
-
-        public async Task SetLockoutAsync(string userGuid, bool lockout, string lastUser, TimeSpan? lockoutTimeSpan = null)  
+        private readonly IKVStore _kv;
+        public UserLoginControlBiz(IKVStore kvStore)
         {
-            TUser? user = await GetAsync<TUser>(userGuid, transContext).ConfigureAwait(false);
+            _kv = kvStore;
+        }
 
-            if (user == null)
+        public async Task SetLockoutAsync(string userGuid, bool lockout, string lastUser, TimeSpan? lockoutTimeSpan = null)
+        {
+            UserLoginControl? uc = await _kv.GetAsync<UserLoginControl>(userGuid).ConfigureAwait(false);
+
+            if (uc == null)
             {
-                throw new IdentityException(ErrorCode.IdentityNotFound, $"userGuid:{userGuid}, lockout:{lockout}, lockoutTimeSpan:{lockoutTimeSpan?.TotalSeconds}");
+                uc = new UserLoginControl { UserGuid = userGuid };
             }
 
-            user.LockoutEnabled = lockout;
+            uc.LockoutEnabled = lockout;
+            uc.LockoutEndDate = DateTimeOffset.UtcNow + (lockoutTimeSpan ?? TimeSpan.FromDays(1));
 
-            if (lockout)
-            {
-                user.LockoutEndDate = DateTimeOffset.UtcNow + (lockoutTimeSpan ?? TimeSpan.FromDays(1));
-            }
-
-            await _db.UpdateAsync(user, lastUser, transContext).ConfigureAwait(false);
+            await _kv.AddOrUpdateAsync(uc, lastUser).ConfigureAwait(false);
         }
 
         public async Task SetAccessFailedCountAsync(string userGuid, long count, string lastUser)
         {
-            TUser? user = await GetAsync<TUser>(userGuid, transContext).ConfigureAwait(false);
+            UserLoginControl? uc = await _kv.GetAsync<UserLoginControl>(userGuid).ConfigureAwait(false);
 
-            if (user == null)
+            if (uc == null)
             {
-                throw new IdentityException(ErrorCode.IdentityNotFound, $"userGuid:{userGuid}, count:{count}");
+                uc = new UserLoginControl { UserGuid = userGuid };
             }
 
-            if (count != 0)
-            {
-                user.AccessFailedLastTime = DateTime.UtcNow;
-            }
+            uc.LoginFailedCount = count;
 
-            user.AccessFailedCount = count;
-
-            await _db.UpdateAsync(user, lastUser, transContext).ConfigureAwait(false);
+            await _kv.AddOrUpdateAsync(uc, lastUser).ConfigureAwait(false);
         }
     }
 }

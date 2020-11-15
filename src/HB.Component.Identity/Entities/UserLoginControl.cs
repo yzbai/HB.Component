@@ -10,9 +10,11 @@ namespace HB.Component.Identity.Entities
     public class UserLoginControl : Entity
     {
         [Required]
+        [KVStoreKey]
         [ForeignKey(typeof(IdentityUser))]
         [GuidEntityProperty(NotNull = true)]
         public string UserGuid { get; set; } = null!;
+
 
         [EntityProperty]
         public bool LockoutEnabled { get; set; }
